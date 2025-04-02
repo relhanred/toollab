@@ -1,14 +1,30 @@
-import authService from '~/services/auth'
+// plugins/auth.js
 import { setupInterceptors } from '~/services/api'
 
 export default defineNuxtPlugin(nuxtApp => {
-    // Configuration des interceptors Axios
-    setupInterceptors()
+    if (process.client) {
+        setupInterceptors()
+    }
 
-    // Injection du service d'authentification
+    const isAuthenticated = () => {
+        if (process.client) {
+            return !!localStorage.getItem('auth.token')
+        }
+        return false
+    }
+
     return {
         provide: {
-            auth: authService
+            auth: {
+                isAuthenticated,
+                getUser: () => {
+                    if (process.client) {
+                        const userJson = localStorage.getItem('auth.user')
+                        return userJson ? JSON.parse(userJson) : null
+                    }
+                    return null
+                }
+            }
         }
     }
 })

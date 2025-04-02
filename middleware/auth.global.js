@@ -1,29 +1,23 @@
 export default defineNuxtRouteMiddleware((to) => {
-    // Ne rien faire côté serveur
-    if (process.server) return
+    const publicPages = ['/login', '/contact'];
 
-    // Routes publiques accessibles sans authentification
-    const publicRoutes = ['/login', '/contact']
+    const requiresAuth = !publicPages.includes(to.path);
 
-    // Vérifier si la route actuelle est une route publique
-    if (publicRoutes.some(route => to.path === route)) {
-        return // Autorise l'accès aux routes publiques
+    if (process.client) {
+        const token = localStorage.getItem('auth.token');
+        const isAuthenticated = !!token;
+
+        if (requiresAuth && !isAuthenticated) {
+            return navigateTo('/login');
+        }
+
+        if (isAuthenticated && to.path === '/login') {
+            return navigateTo('/');
+        }
     }
 
-    // Vérifie si l'utilisateur est authentifié
-    const token = localStorage.getItem('auth.token')
-    const isAuthenticated = !!token
-
-    // Si l'utilisateur n'est pas authentifié et tente d'accéder à une route protégée
-    if (!isAuthenticated) {
-        return navigateTo({
-            path: '/login',
-            query: { redirect: to.fullPath }
-        })
+    if (process.server) {
+        if (requiresAuth) {
+        }
     }
-
-    // Si l'utilisateur est authentifié et tente d'accéder à login
-    if (isAuthenticated && to.path === '/login') {
-        return navigateTo('/')
-    }
-})
+});
