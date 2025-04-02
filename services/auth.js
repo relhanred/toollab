@@ -36,12 +36,10 @@ export default {
     async logout() {
         const axios = useApi()
         try {
-            // Appel au backend pour invalider le token
             await axios.post('/api/logout')
         } catch (error) {
             console.error('Erreur lors de la déconnexion:', error)
         } finally {
-            // Suppression des informations d'authentification côté client
             localStorage.removeItem('auth.token')
             localStorage.removeItem('auth.user')
             delete axios.defaults.headers.common['Authorization']

@@ -6,6 +6,31 @@ import Notification from "~/components/Icons/Notification.vue";
 import Cursus from "~/components/Icons/Cursus.vue";
 import NavLink from "~/components/navigation/NavLink.vue";
 import FamilyTLB from "~/components/Icons/Family-TLB.vue";
+import UserDropdown from "~/components/UserDropdown.vue";
+import { ref, computed, onMounted } from 'vue';
+
+const user = ref(null);
+const initials = computed(() => {
+  if (!user.value) return 'NA';
+
+  const firstName = user.value.first_name || '';
+  const lastName = user.value.last_name || '';
+
+  return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+});
+
+onMounted(() => {
+  if (process.client) {
+    const userJson = localStorage.getItem('auth.user');
+    if (userJson) {
+      try {
+        user.value = JSON.parse(userJson);
+      } catch (e) {
+        console.error('Erreur lors de la récupération des données utilisateur', e);
+      }
+    }
+  }
+});
 </script>
 
 <template>
@@ -21,7 +46,7 @@ import FamilyTLB from "~/components/Icons/Family-TLB.vue";
       </nav>
     </aside>
     <div class="flex flex-col flex-1">
-      <header class="flex items-center bg-white h-20  border-b font-montserrat">
+      <header class="flex items-center bg-white h-20 border-b font-montserrat">
         <div class="flex items-center justify-between w-full px-10 py-4">
           <h1 class="text-3xl font-semibold text-default leading-8">
             {{ $route.meta.layoutData?.title || 'Dashboard' }}
@@ -36,10 +61,7 @@ import FamilyTLB from "~/components/Icons/Family-TLB.vue";
               <Notification class="size-6 text-red-500"/>
             </div>
 
-            <div
-                class="inline-flex items-center justify-center rounded-full text-center bg-gray-light p-2.5 uppercase text-lg text-primary">
-              <span class="size-7">RE</span>
-            </div>
+            <UserDropdown :initials="initials" />
           </div>
         </div>
       </header>
@@ -47,6 +69,5 @@ import FamilyTLB from "~/components/Icons/Family-TLB.vue";
         <slot/>
       </main>
     </div>
-
   </div>
 </template>
