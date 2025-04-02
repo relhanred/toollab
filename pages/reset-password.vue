@@ -64,10 +64,15 @@ const handleSubmit = async () => {
     const data = await response.json()
 
     if (response.ok) {
-      message.value = { type: 'success', text: data.message || 'Votre mot de passe a été réinitialisé avec succès' }
-      setTimeout(() => {
-        router.push('/login')
-      }, 3000)
+      // Utiliser le composable useAuth pour gérer le message flash
+      const { setFlashMessage } = useFlashMessage()
+      setFlashMessage({
+        type: 'success',
+        message: data.message || 'Votre mot de passe a été réinitialisé avec succès'
+      })
+
+      // Redirection immédiate
+      router.push('/login')
     } else {
       message.value = { type: 'error', text: data.message || 'Une erreur est survenue' }
     }

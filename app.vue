@@ -18,7 +18,9 @@ onMounted(() => {
     </div>
   </div>
 
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
+  <FlashMessage />
+
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
 </template>
