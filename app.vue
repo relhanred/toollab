@@ -18,9 +18,7 @@ onMounted(() => {
     </div>
   </div>
 
-  <div v-else>
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
-  </div>
 </template>
