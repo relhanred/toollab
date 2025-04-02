@@ -45,7 +45,6 @@ const handleSubmit = async () => {
       remember: form.value.remember
     })
 
-    // Redirection après connexion réussie
     const redirectPath = route.query.redirect || '/'
     router.push(redirectPath)
   } catch (error) {

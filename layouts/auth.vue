@@ -23,7 +23,9 @@ import FamilyTLB from "~/components/Icons/Family-TLB.vue";
     <div class="flex flex-col flex-1">
       <header class="flex items-center bg-white h-20  border-b font-montserrat">
         <div class="flex items-center justify-between w-full px-10 py-4">
-          <h1 class="text-3xl font-semibold text-default leading-8">{{ $route.meta.layoutData.title }}</h1>
+          <h1 class="text-3xl font-semibold text-default leading-8">
+            {{ $route.meta.layoutData?.title || 'Dashboard' }}
+          </h1>
 
           <div class="flex items-center gap-x-6">
             <div class="inline-flex items-center justify-center rounded-full bg-gray-light p-2.5">
