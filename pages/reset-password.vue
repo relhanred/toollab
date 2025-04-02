@@ -1,7 +1,7 @@
 <script setup>
 import LogoText from "~/components/Icons/LogoText.vue"
 import InputText from "~/components/form/InputText.vue"
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from '#imports'
 
 definePageMeta({
@@ -26,6 +26,38 @@ const email = computed(() => route.query.email)
 const isSubmitting = ref(false)
 const message = ref({ type: '', text: '' })
 const passwordsMatch = computed(() => form.value.password === form.value.password_confirmation)
+const isTokenValid = ref(false)
+
+onMounted(async () => {
+  // Vérifier la validité du token côté serveur
+  if (token.value && email.value) {
+    try {
+      const response = await fetch(`${useRuntimeConfig().public.apiUrl}/api/check-reset-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          token: token.value,
+          email: email.value
+        })
+      })
+
+      const data = await response.json()
+      isTokenValid.value = response.ok
+
+      if (!response.ok) {
+        message.value = { type: 'error', text: data.message || 'Lien de réinitialisation invalide ou expiré' }
+      }
+    } catch (error) {
+      console.error('Erreur de vérification du token:', error)
+      message.value = { type: 'error', text: 'Une erreur est survenue lors de la vérification du lien' }
+    }
+  } else {
+    message.value = { type: 'error', text: 'Lien de réinitialisation incomplet' }
+  }
+})
 
 const handleSubmit = async () => {
   if (!form.value.password || !form.value.password_confirmation) {
@@ -40,6 +72,11 @@ const handleSubmit = async () => {
 
   if (form.value.password.length < 8) {
     message.value = { type: 'error', text: 'Le mot de passe doit contenir au moins 8 caractères' }
+    return
+  }
+
+  if (!isTokenValid.value) {
+    message.value = { type: 'error', text: 'Le lien de réinitialisation est invalide ou a expiré' }
     return
   }
 
@@ -64,14 +101,12 @@ const handleSubmit = async () => {
     const data = await response.json()
 
     if (response.ok) {
-      // Utiliser le composable useAuth pour gérer le message flash
       const { setFlashMessage } = useFlashMessage()
       setFlashMessage({
         type: 'success',
         message: data.message || 'Votre mot de passe a été réinitialisé avec succès'
       })
 
-      // Redirection immédiate
       router.push('/login')
     } else {
       message.value = { type: 'error', text: data.message || 'Une erreur est survenue' }
@@ -106,11 +141,7 @@ const handleSubmit = async () => {
           {{ message.text }}
         </div>
 
-        <div v-if="!token || !email" class="w-full p-4 mb-6 rounded text-white text-center bg-red-500">
-          Lien de réinitialisation invalide ou expiré
-        </div>
-
-        <template v-else>
+        <template v-if="isTokenValid">
           <div class="w-full mb-6">
             <InputText
                 placeholder="Nouveau mot de passe"
