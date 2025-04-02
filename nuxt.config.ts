@@ -8,7 +8,6 @@ export default defineNuxtConfig({
     modules: [
         '@nuxtjs/tailwindcss',
         '@nuxt/image',
-        // Remplacer '@nuxtjs/axios' par un module compatible avec Nuxt 3
     ],
     runtimeConfig: {
         public: {
