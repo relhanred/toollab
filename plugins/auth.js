@@ -1,4 +1,3 @@
-// plugins/auth.js
 import { setupInterceptors } from '~/services/api'
 
 export default defineNuxtPlugin(nuxtApp => {

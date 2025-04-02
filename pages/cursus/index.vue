@@ -1,5 +1,4 @@
 <script setup>
-import Plus from "~/components/Icons/Plus.vue";
 import ToogleCursus from "~/components/form/ToogleCursus.vue";
 import InputCross from "~/components/form/InputCross.vue";
 import PlusLight from "~/components/Icons/PlusLight.vue";

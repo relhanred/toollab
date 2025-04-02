@@ -1,19 +1,16 @@
 import { ref, readonly } from 'vue'
 import authService from '~/services/auth'
 
-// État global pour le partager entre les composants
 const user = ref(null)
 const isAuthenticated = ref(false)
 const isLoading = ref(false)
 const error = ref(null)
 
-// Initialiser avec les valeurs du localStorage si côté client
 if (process.client) {
     try {
         user.value = authService.getUser()
         isAuthenticated.value = authService.isAuthenticated()
     } catch (e) {
-        // En cas d'erreur de parsing, nettoyer le stockage
         localStorage.removeItem('auth.user')
         localStorage.removeItem('auth.token')
     }
