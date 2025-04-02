@@ -4,7 +4,7 @@ import LogoText from "~/components/Icons/LogoText.vue"
 import InputText from "~/components/form/InputText.vue"
 import { ref } from 'vue'
 import { useAuth } from '~/composables/useAuth'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter, useRoute } from '#imports'
 
 definePageMeta({
   layout: 'default',

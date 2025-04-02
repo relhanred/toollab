@@ -1,7 +1,7 @@
 <script setup>
 import BreadCrumb from "~/components/navigation/BreadCrumb.vue";
 import Dots from "~/components/Icons/Dots.vue";
-import { useRoute } from 'vue-router'
+import { useRoute }  from '#imports'
 import SelectGenre from "~/components/form/SelectGenre.vue";
 
 const route = useRoute()

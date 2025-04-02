@@ -4,7 +4,7 @@ import ClockTLB from "~/components/Icons/Clock-TLB.vue";
 import StudentTLB from "~/components/Icons/Student-TLB.vue";
 import { ref, computed } from 'vue';
 import Valid from "~/components/Icons/Valid.vue";
-import { useRouter, useRoute } from 'vue-router';
+import { useRouter, useRoute }  from '#imports'
 import ConfirmationClasseModal from "~/components/modals/ConfirmationClasseModal.vue";
 
 const router = useRouter();
