@@ -103,7 +103,7 @@ const handleSubmit = async () => {
               </label>
 
               <div class="text-default/60 text-nowrap inline-flex items-start justify-start">
-                <NuxtLink to="/forgot-password">Mot de passe oublié ?</NuxtLink>
+                <NuxtLink to="/forgot-password" class="hover:underline">Mot de passe oublié ?</NuxtLink>
               </div>
             </div>
           </div>
