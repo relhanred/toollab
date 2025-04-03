@@ -1,5 +1,5 @@
 export default defineNuxtRouteMiddleware((to) => {
-    const publicPages = ['/login', '/contact', '/forgot-password', '/reset-password'];
+    const publicPages = ['/login', '/contact', '/forgot-password', '/reset-password', '/set-password'];
 
     const requiresAuth = !publicPages.includes(to.path);
 
