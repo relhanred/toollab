@@ -29,14 +29,12 @@ const passwordsMatch = computed(() => form.value.password === form.value.passwor
 const isTokenValid = ref(true)  // On présume que le token est valide par défaut
 
 onMounted(async () => {
-  // Vérifier les paramètres essentiels
   if (!token.value || !email.value) {
     message.value = { type: 'error', text: 'Lien d\'invitation incomplet' }
     isTokenValid.value = false
     return
   }
 
-  // Vérification de la validité du token côté serveur
   try {
     const response = await fetch(`${useRuntimeConfig().public.apiUrl}/api/check-invitation-token`, {
       method: 'POST',
@@ -64,7 +62,6 @@ onMounted(async () => {
 })
 
 const handleSubmit = async () => {
-  // Validation de base
   if (!form.value.password || !form.value.password_confirmation) {
     message.value = { type: 'error', text: 'Veuillez remplir tous les champs' }
     return
@@ -103,7 +100,6 @@ const handleSubmit = async () => {
     if (response.ok) {
       message.value = { type: 'success', text: data.message || 'Votre mot de passe a été défini avec succès' }
 
-      // Redirection après un court délai pour que l'utilisateur puisse voir le message de succès
       setTimeout(() => {
         router.push('/login')
       }, 2000)
@@ -131,7 +127,6 @@ const handleSubmit = async () => {
           Vous avez été invité en tant que directeur d'école. Veuillez créer un mot de passe pour accéder à votre compte.
         </p>
 
-        <!-- Messages d'erreur ou de succès -->
         <div v-if="message.text"
              :class="[
                'w-full p-4 mb-6 rounded text-white text-center',
