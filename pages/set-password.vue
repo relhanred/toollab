@@ -122,8 +122,7 @@ const handleSubmit = async () => {
 <template>
   <div class="flex flex-col items-center justify-start w-full h-full min-h-screen font-nunito">
     <LogoText class="my-[5vh]"/>
-    <div
-        class="flex flex-col items-center justify-start bg-white rounded-3xl border w-[85%] sm:w-[70%] lg:w-[50%] 2xl:w-[35%] min-h-[50vh] shadow-xl">
+    <div class="flex flex-col items-center justify-start bg-white rounded-3xl border w-[85%] sm:w-[70%] lg:w-[50%] 2xl:w-[35%] min-h-[50vh] shadow-xl">
       <form
           @submit.prevent="handleSubmit"
           class="w-[90%] sm:w-5/6 flex flex-col items-center justify-between mt-6 sm:mt-10 md:mt-12 mb-16 sm:mb-20 md:mb-24">
@@ -132,6 +131,7 @@ const handleSubmit = async () => {
           Vous avez été invité en tant que directeur d'école. Veuillez créer un mot de passe pour accéder à votre compte.
         </p>
 
+        <!-- Messages d'erreur ou de succès -->
         <div v-if="message.text"
              :class="[
                'w-full p-4 mb-6 rounded text-white text-center',
@@ -141,15 +141,7 @@ const handleSubmit = async () => {
         </div>
 
         <template v-if="isTokenValid">
-          <div class="w-full mb-4">
-            <InputText
-                :value="email"
-                placeholder="Adresse email"
-                type="email"
-                readonly
-                disabled
-            />
-          </div>
+          <!-- Suppression du champ email -->
 
           <div class="w-full mb-6">
             <InputText
