@@ -26,7 +26,7 @@ const email = computed(() => route.query.email)
 const isSubmitting = ref(false)
 const message = ref({ type: '', text: '' })
 const passwordsMatch = computed(() => form.value.password === form.value.password_confirmation)
-const isTokenValid = ref(true)  // On présume que le token est valide par défaut
+const isTokenValid = ref(true);
 
 onMounted(async () => {
   if (!token.value || !email.value) {
@@ -98,11 +98,12 @@ const handleSubmit = async () => {
     const data = await response.json()
 
     if (response.ok) {
-      message.value = { type: 'success', text: data.message || 'Votre mot de passe a été défini avec succès' }
-
-      setTimeout(() => {
-        router.push('/login')
-      }, 2000)
+      const { setFlashMessage } = useFlashMessage();
+      setFlashMessage({
+        type: 'success',
+        message: data.message || 'Votre mot de passe a été défini avec succès'
+      });
+      await router.push('/login');
     } else {
       message.value = { type: 'error', text: data.message || 'Une erreur est survenue' }
     }
@@ -136,7 +137,6 @@ const handleSubmit = async () => {
         </div>
 
         <template v-if="isTokenValid">
-          <!-- Suppression du champ email -->
 
           <div class="w-full mb-6">
             <InputText
