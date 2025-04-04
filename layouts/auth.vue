@@ -54,7 +54,9 @@ onMounted(() => {
 
           <div class="flex items-center gap-x-6">
             <div class="inline-flex items-center justify-center rounded-full bg-gray-light p-2.5">
-              <Setting class="size-6 text-primary"/>
+              <NuxtLink to="/settings">
+                <Setting class="size-6 text-primary"/>
+              </NuxtLink>
             </div>
 
             <div class="inline-flex items-center justify-center rounded-full bg-gray-light p-2.5">
