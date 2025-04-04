@@ -162,17 +162,20 @@ const handleUpdateSchool = async () => {
 
     const formData = new FormData()
 
+    // Ajouter cette ligne pour simuler une requête PUT avec POST
+    formData.append('_method', 'PUT')
+
+    // Assurez-vous que tous les champs sont inclus, même vides
     Object.keys(schoolForm.value).forEach(key => {
-      if (schoolForm.value[key]) {
-        formData.append(key, schoolForm.value[key])
-      }
+      formData.append(key, schoolForm.value[key] || '')
     })
 
     if (logoFile.value) {
       formData.append('logo', logoFile.value)
     }
 
-    const response = await apiClient.put(`/api/schools/${school.value.id}`, formData, {
+    // Changez PUT en POST
+    const response = await apiClient.post(`/api/schools/${school.value.id}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
