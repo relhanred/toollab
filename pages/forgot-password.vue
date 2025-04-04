@@ -1,8 +1,8 @@
 <script setup>
 import LogoText from "~/components/Icons/LogoText.vue"
 import InputText from "~/components/form/InputText.vue"
-import { ref } from 'vue'
-import { useRouter } from '#imports'
+import {ref} from 'vue'
+import {useRouter} from '#imports'
 
 definePageMeta({
   layout: 'default',
@@ -14,18 +14,18 @@ definePageMeta({
 
 const email = ref('')
 const isSubmitting = ref(false)
-const message = ref({ type: '', text: '' })
+const message = ref({type: '', text: ''})
 const router = useRouter()
 
 const handleSubmit = async () => {
   if (!email.value) {
-    message.value = { type: 'error', text: 'Veuillez entrer votre adresse email' }
+    message.value = {type: 'error', text: 'Veuillez entrer votre adresse email'}
     return
   }
 
   try {
     isSubmitting.value = true
-    message.value = { type: '', text: '' }
+    message.value = {type: '', text: ''}
 
     const response = await fetch(`${useRuntimeConfig().public.apiUrl}/api/forgot-password`, {
       method: 'POST',
@@ -33,22 +33,24 @@ const handleSubmit = async () => {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({ email: email.value })
+      body: JSON.stringify({email: email.value})
     })
 
     const data = await response.json()
 
     if (response.ok) {
-      message.value = { type: 'success', text: data.message || 'Un email de réinitialisation a été envoyé' }
-      setTimeout(() => {
-        router.push('/login')
-      }, 3000)
+      const {setFlashMessage} = useFlashMessage();
+      setFlashMessage({
+        type: 'success',
+        message: data.message || 'Un email de réinitialisation a été envoyé'
+      });
+      await router.push('/login');
     } else {
-      message.value = { type: 'error', text: data.message || 'Une erreur est survenue' }
+      message.value = {type: 'error', text: data.message || 'Une erreur est survenue'}
     }
   } catch (error) {
     console.error('Erreur:', error)
-    message.value = { type: 'error', text: 'Une erreur est survenue lors de la demande' }
+    message.value = {type: 'error', text: 'Une erreur est survenue lors de la demande'}
   } finally {
     isSubmitting.value = false
   }
