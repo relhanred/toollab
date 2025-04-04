@@ -12,6 +12,7 @@ definePageMeta({
   }
 })
 
+usePageTitle('Réinitialisation du mot de passe')
 const email = ref('')
 const isSubmitting = ref(false)
 const message = ref({type: '', text: ''})

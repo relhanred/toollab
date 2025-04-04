@@ -2,6 +2,7 @@
 import AuthGuard from '~/components/auth/AuthGuard.vue'
 import SearchInput from "~/components/form/SearchInput.vue"
 
+usePageTitle('Accueil')
 definePageMeta({
   layout: 'auth',
   layoutData: {

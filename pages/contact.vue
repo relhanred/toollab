@@ -2,9 +2,11 @@
 import LogoText from "~/components/Icons/LogoText.vue";
 import InputText from "~/components/form/InputText.vue";
 
+usePageTitle('Contact')
 definePageMeta({
   layout: 'default'
 })
+
 </script>
 <template>
   <div class="flex flex-col items-center justify-start w-full h-full min-h-screen font-nunito">

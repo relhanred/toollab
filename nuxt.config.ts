@@ -1,4 +1,3 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
     compatibilityDate: '2024-04-03',
     devtools: { enabled: true },
@@ -16,6 +15,8 @@ export default defineNuxtConfig({
     },
     app: {
         head: {
+            titleTemplate: '%s - Toollab',
+            title: 'Toollab',
             link: [
                 {
                     rel: 'stylesheet',
@@ -24,11 +25,9 @@ export default defineNuxtConfig({
             ]
         }
     },
-    // Auto-imports pour Vue Router
     imports: {
         dirs: ['composables/**']
     },
-    // Configuration des buildModules
     build: {
         transpile: ['axios']
     }
