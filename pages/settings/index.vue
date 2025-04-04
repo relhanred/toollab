@@ -4,7 +4,7 @@ import { useAuth } from '~/composables/useAuth'
 import InputText from "~/components/form/InputText.vue"
 import SaveButton from "~/components/form/SaveButton.vue"
 import apiClient from '~/services/api'
-import {usePageTitle} from "~/composables/usePageTitle.js";
+import { usePageTitle } from "~/composables/usePageTitle.js"
 
 definePageMeta({
   layout: 'auth',
@@ -16,6 +16,7 @@ definePageMeta({
 usePageTitle('Paramètres')
 
 const { user } = useAuth()
+const { setFlashMessage } = useFlashMessage()
 const isDirector = ref(false)
 const activeTab = ref('profile')
 const isLoading = ref(true)
@@ -105,10 +106,11 @@ const handleUpdateUser = async () => {
     userData.last_name = userForm.value.last_name
     localStorage.setItem('auth.user', JSON.stringify(userData))
 
-    message.value = {
+    // Remplacer le message local par un flash message
+    setFlashMessage({
       type: 'success',
-      text: 'Informations mises à jour avec succès'
-    }
+      message: 'Informations mises à jour avec succès'
+    })
 
     user.value = userData
 
@@ -136,10 +138,11 @@ const handleUpdatePassword = async () => {
       password_confirmation: passwordForm.value.password_confirmation
     })
 
-    message.value = {
+    // Remplacer le message local par un flash message
+    setFlashMessage({
       type: 'success',
-      text: 'Mot de passe mis à jour avec succès'
-    }
+      message: 'Mot de passe mis à jour avec succès'
+    })
 
     passwordForm.value = {
       current_password: '',
@@ -187,10 +190,11 @@ const handleUpdateSchool = async () => {
       logoPreview.value = `${useRuntimeConfig().public.apiUrl}/storage/${response.data.logo}`
     }
 
-    message.value = {
+    // Remplacer le message local par un flash message
+    setFlashMessage({
       type: 'success',
-      text: 'Informations de l\'école mises à jour avec succès'
-    }
+      message: 'Informations de l\'école mises à jour avec succès'
+    })
 
   } catch (error) {
     console.error('Erreur lors de la mise à jour de l\'école:', error)
