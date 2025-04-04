@@ -3,7 +3,6 @@ import { ref, onMounted, computed } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import InputText from "~/components/form/InputText.vue"
 import SaveButton from "~/components/form/SaveButton.vue"
-import CancelButton from "~/components/form/CancelButton.vue"
 import apiClient from '~/services/api'
 import {usePageTitle} from "~/composables/usePageTitle.js";
 
