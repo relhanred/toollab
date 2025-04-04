@@ -53,7 +53,7 @@ onMounted(() => {
           </h1>
 
           <div class="flex items-center gap-x-6">
-            <div class="inline-flex items-center justify-center rounded-full bg-gray-light p-2.5">
+            <div class="inline-flex items-center justify-center rounded-full bg-gray-light p-2.5 hover:bg-gray-200 transition-colors duration-200">
               <NuxtLink to="/settings">
                 <Setting class="size-6 text-primary"/>
               </NuxtLink>

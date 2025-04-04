@@ -95,13 +95,16 @@ const handleUpdateUser = async () => {
   try {
     message.value = { type: '', text: '' }
 
-    const response = await apiClient.put(`/api/users/${user.value.id}`, userForm.value)
+    const response = await apiClient.put(`/api/users/${user.value.id}`, {
+      first_name: userForm.value.first_name,
+      last_name: userForm.value.last_name,
+      email: user.value.email // Maintenir l'email original
+    })
 
     // Mettre à jour les informations utilisateur dans le localStorage
     const userData = JSON.parse(localStorage.getItem('auth.user'))
     userData.first_name = userForm.value.first_name
     userData.last_name = userForm.value.last_name
-    userData.email = userForm.value.email
     localStorage.setItem('auth.user', JSON.stringify(userData))
 
     message.value = {
@@ -221,15 +224,14 @@ onMounted(async () => {
     </div>
 
     <div v-else class="bg-white shadow rounded-lg">
-      <!-- Onglets -->
       <div class="flex border-b">
         <button
             @click="activeTab = 'profile'"
             :class="[
-            'px-6 py-3 font-medium text-sm focus:outline-none',
+            'px-6 py-3 font-medium text-sm focus:outline-none transition-colors',
             activeTab === 'profile'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'border-b-2 border-black text-black font-semibold'
+              : 'text-gray-500 hover:text-black'
           ]"
         >
           Profil
@@ -238,10 +240,10 @@ onMounted(async () => {
         <button
             @click="activeTab = 'password'"
             :class="[
-            'px-6 py-3 font-medium text-sm focus:outline-none',
+            'px-6 py-3 font-medium text-sm focus:outline-none transition-colors',
             activeTab === 'password'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'border-b-2 border-black text-black font-semibold'
+              : 'text-gray-500 hover:text-black'
           ]"
         >
           Mot de passe
@@ -251,19 +253,17 @@ onMounted(async () => {
             v-if="isDirector"
             @click="activeTab = 'school'"
             :class="[
-            'px-6 py-3 font-medium text-sm focus:outline-none',
+            'px-6 py-3 font-medium text-sm focus:outline-none transition-colors',
             activeTab === 'school'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'border-b-2 border-black text-black font-semibold'
+              : 'text-gray-500 hover:text-black'
           ]"
         >
           Mon établissement
         </button>
       </div>
 
-      <!-- Contenu des onglets -->
       <div class="p-6">
-        <!-- Message de notification -->
         <div
             v-if="message.text"
             :class="[
@@ -294,11 +294,16 @@ onMounted(async () => {
             </div>
 
             <div class="md:col-span-2">
-              <InputText
-                  v-model="userForm.email"
-                  placeholder="Email"
-                  type="email"
-              />
+              <div class="relative">
+                <input
+                    :value="userForm.email"
+                    readonly
+                    placeholder="Email"
+                    class="w-full px-3 py-3 border border-input-stroke bg-gray-50 text-gray-600 placeholder:text-placeholder rounded-lg focus:outline-none cursor-not-allowed"
+                />
+                <div class="absolute inset-0 bg-gray-50 opacity-15 pointer-events-none"></div>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">L'adresse email ne peut pas être modifiée</p>
             </div>
           </div>
 
@@ -309,7 +314,6 @@ onMounted(async () => {
           </div>
         </div>
 
-        <!-- Onglet mot de passe -->
         <div v-if="activeTab === 'password'">
           <h2 class="text-lg font-semibold mb-6">Changer de mot de passe</h2>
 
@@ -341,12 +345,11 @@ onMounted(async () => {
 
           <div class="flex justify-end mt-6">
             <SaveButton @click="handleUpdatePassword">
-              Mettre à jour le mot de passe
+              Mettre à jour
             </SaveButton>
           </div>
         </div>
 
-        <!-- Onglet école (visible uniquement pour les directeurs) -->
         <div v-if="activeTab === 'school' && isDirector">
           <h2 class="text-lg font-semibold mb-6">Informations de l'établissement</h2>
 
@@ -374,7 +377,7 @@ onMounted(async () => {
                 <span class="text-gray-400">Aucun logo</span>
               </div>
 
-              <label class="cursor-pointer bg-gray-50 px-4 py-2 border rounded hover:bg-gray-100">
+              <label class="cursor-pointer bg-gray-50 px-4 py-2 border rounded hover:bg-gray-100 transition-colors">
                 <span>{{ logoPreview ? 'Changer le logo' : 'Ajouter un logo' }}</span>
                 <input
                     type="file"
