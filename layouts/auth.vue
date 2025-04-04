@@ -59,9 +59,9 @@ onMounted(() => {
               </NuxtLink>
             </div>
 
-            <div class="inline-flex items-center justify-center rounded-full bg-gray-light p-2.5">
+<!--            <div class="inline-flex items-center justify-center rounded-full bg-gray-light p-2.5">
               <Notification class="size-6 text-red-500"/>
-            </div>
+            </div>-->
 
             <UserDropdown :initials="initials" />
           </div>
