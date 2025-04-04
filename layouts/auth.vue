@@ -7,7 +7,7 @@ import Cursus from "~/components/Icons/Cursus.vue";
 import NavLink from "~/components/navigation/NavLink.vue";
 import FamilyTLB from "~/components/Icons/Family-TLB.vue";
 import UserDropdown from "~/components/UserDropdown.vue";
-import { ref, computed, onMounted } from 'vue';
+import {ref, computed, onMounted} from 'vue';
 
 const user = ref(null);
 const initials = computed(() => {
@@ -53,17 +53,16 @@ onMounted(() => {
           </h1>
 
           <div class="flex items-center gap-x-6">
-            <div class="inline-flex items-center justify-center rounded-full bg-gray-light p-2.5 hover:bg-gray-200 transition-colors duration-200">
-              <NuxtLink to="/settings">
-                <Setting class="size-6 text-primary"/>
-              </NuxtLink>
-            </div>
+            <NuxtLink to="/settings"
+                      class="inline-flex items-center justify-center rounded-full bg-gray-light p-2.5 hover:bg-gray-200 transition-colors duration-200">
+              <Setting class="size-6 text-primary"/>
+            </NuxtLink>
 
-<!--            <div class="inline-flex items-center justify-center rounded-full bg-gray-light p-2.5">
-              <Notification class="size-6 text-red-500"/>
-            </div>-->
+            <!--            <div class="inline-flex items-center justify-center rounded-full bg-gray-light p-2.5">
+                          <Notification class="size-6 text-red-500"/>
+                        </div>-->
 
-            <UserDropdown :initials="initials" />
+            <UserDropdown :initials="initials"/>
           </div>
         </div>
       </header>
