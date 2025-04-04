@@ -5,6 +5,7 @@ import InputText from "~/components/form/InputText.vue"
 import SaveButton from "~/components/form/SaveButton.vue"
 import CancelButton from "~/components/form/CancelButton.vue"
 import apiClient from '~/services/api'
+import {usePageTitle} from "~/composables/usePageTitle.js";
 
 definePageMeta({
   layout: 'auth',
@@ -12,6 +13,8 @@ definePageMeta({
     title: 'Paramètres'
   }
 })
+
+usePageTitle('Paramètres')
 
 const { user } = useAuth()
 const isDirector = ref(false)
@@ -24,8 +27,7 @@ const logoPreview = ref('')
 
 const userForm = ref({
   first_name: '',
-  last_name: '',
-  email: ''
+  last_name: ''
 })
 
 const passwordForm = ref({
@@ -46,7 +48,6 @@ const schoolForm = ref({
 
 const checkIfDirector = async () => {
   try {
-    // Vérifier si l'utilisateur est directeur
     const response = await apiClient.get(`/api/users/${user.value.id}/roles`)
     const roles = response.data.roles
 
@@ -54,7 +55,6 @@ const checkIfDirector = async () => {
       const directorRole = roles.schools.find(role => role.role === 'Director')
       if (directorRole) {
         isDirector.value = true
-        // Chercher les informations de l'école
         const schoolResponse = await apiClient.get(`/api/schools/${directorRole.context.id}`)
         school.value = schoolResponse.data
         populateSchoolForm()
@@ -71,7 +71,6 @@ const populateUserForm = () => {
   if (user.value) {
     userForm.value.first_name = user.value.first_name || ''
     userForm.value.last_name = user.value.last_name || ''
-    userForm.value.email = user.value.email || ''
   }
 }
 
@@ -91,6 +90,7 @@ const populateSchoolForm = () => {
   }
 }
 
+
 const handleUpdateUser = async () => {
   try {
     message.value = { type: '', text: '' }
@@ -98,10 +98,9 @@ const handleUpdateUser = async () => {
     const response = await apiClient.put(`/api/users/${user.value.id}`, {
       first_name: userForm.value.first_name,
       last_name: userForm.value.last_name,
-      email: user.value.email // Maintenir l'email original
+      email: user.value.email
     })
 
-    // Mettre à jour les informations utilisateur dans le localStorage
     const userData = JSON.parse(localStorage.getItem('auth.user'))
     userData.first_name = userForm.value.first_name
     userData.last_name = userForm.value.last_name
@@ -112,7 +111,6 @@ const handleUpdateUser = async () => {
       text: 'Informations mises à jour avec succès'
     }
 
-    // Rafraîchir l'objet user
     user.value = userData
 
   } catch (error) {
@@ -144,7 +142,6 @@ const handleUpdatePassword = async () => {
       text: 'Mot de passe mis à jour avec succès'
     }
 
-    // Réinitialiser le formulaire
     passwordForm.value = {
       current_password: '',
       password: '',
@@ -182,7 +179,6 @@ const handleUpdateSchool = async () => {
       }
     })
 
-    // Mettre à jour les infos de l'école
     school.value = response.data
 
     if (response.data.logo) {
@@ -274,7 +270,6 @@ onMounted(async () => {
           {{ message.text }}
         </div>
 
-        <!-- Onglet profil -->
         <div v-if="activeTab === 'profile'">
           <h2 class="text-lg font-semibold mb-6">Informations personnelles</h2>
 
@@ -291,19 +286,6 @@ onMounted(async () => {
                   v-model="userForm.last_name"
                   placeholder="Nom"
               />
-            </div>
-
-            <div class="md:col-span-2">
-              <div class="relative">
-                <input
-                    :value="userForm.email"
-                    readonly
-                    placeholder="Email"
-                    class="w-full px-3 py-3 border border-input-stroke bg-gray-50 text-gray-600 placeholder:text-placeholder rounded-lg focus:outline-none cursor-not-allowed"
-                />
-                <div class="absolute inset-0 bg-gray-50 opacity-15 pointer-events-none"></div>
-              </div>
-              <p class="text-xs text-gray-500 mt-1">L'adresse email ne peut pas être modifiée</p>
             </div>
           </div>
 
