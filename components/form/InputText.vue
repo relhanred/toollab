@@ -1,5 +1,5 @@
 <script setup>
-import { defineModel, ref, watch } from 'vue'
+import { defineModel, ref, watch, onMounted } from 'vue'
 
 const props = defineProps({
   placeholder: {
@@ -23,6 +23,10 @@ const props = defineProps({
 const modelValue = defineModel()
 const isFocused = ref(false)
 const isFloating = ref(false)
+
+onMounted(() => {
+  isFloating.value = !!modelValue.value
+})
 
 watch(() => modelValue.value, (newVal) => {
   isFloating.value = !!newVal || isFocused.value
