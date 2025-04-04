@@ -2,7 +2,6 @@
 import LogoText from "~/components/Icons/LogoText.vue";
 import Home from "~/components/Icons/Home.vue";
 import Setting from "~/components/Icons/Setting.vue";
-import Notification from "~/components/Icons/Notification.vue";
 import Cursus from "~/components/Icons/Cursus.vue";
 import NavLink from "~/components/navigation/NavLink.vue";
 import FamilyTLB from "~/components/Icons/Family-TLB.vue";
@@ -18,6 +17,8 @@ const initials = computed(() => {
 
   return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
 });
+
+const institutName = ref('Nom de l\'Institut');
 
 onMounted(() => {
   if (process.client) {
@@ -44,6 +45,16 @@ onMounted(() => {
         <NavLink to="/cursus" :icon="Cursus" text="Cursus"/>
         <NavLink to="/family" :icon="FamilyTLB" text="Familles"/>
       </nav>
+
+      <div class="mt-auto mb-6 px-6">
+        <div class="flex items-center gap-x-3 py-3">
+          <div class="w-8 h-8 flex items-center justify-center rounded-full bg-primary">
+            <!-- Vous pouvez remplacer par votre logo spécifique ou utiliser une lettre initiale -->
+            <span class="text-white text-sm font-semibold">I</span>
+          </div>
+          <span class="text-sm text-gray-800">{{ institutName }}</span>
+        </div>
+      </div>
     </aside>
     <div class="flex flex-col flex-1">
       <header class="flex items-center bg-white h-20 border-b font-montserrat">
