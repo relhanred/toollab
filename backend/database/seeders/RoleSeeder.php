@@ -14,12 +14,12 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         $roles = [
-            ['name' => 'Director', 'slug' => 'director'],
-            ['name' => 'Admin', 'slug' => 'admin'],
-            ['name' => 'Registar', 'slug' => 'registar'],
-            ['name' => 'Responsible', 'slug' => 'responsible'],
-            ['name' => 'Student', 'slug' => 'student'],
-            ['name' => 'Teacher', 'slug' => 'teacher'],
+            ['name' => 'Directeur', 'slug' => 'director'],
+            ['name' => 'Administrateur', 'slug' => 'admin'],
+            ['name' => 'Responsable des inscriptions', 'slug' => 'registar'],
+            ['name' => 'Responsable', 'slug' => 'responsible'],
+            ['name' => 'Élève', 'slug' => 'student'],
+            ['name' => 'Professeur', 'slug' => 'teacher'],
         ];
 
         Role::insert($roles);
