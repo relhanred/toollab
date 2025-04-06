@@ -3,7 +3,9 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\SchoolController;
+use App\Http\Controllers\Api\StaffController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\UserPasswordController;
 use App\Http\Controllers\PasswordResetController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,7 +16,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::apiResource('users', UserController::class);
 
-    Route::post('/users/change-password', [App\Http\Controllers\Api\UserPasswordController::class, 'changePassword']);
+    Route::post('/users/create-staff', [StaffController::class, 'createStaffUser']);
+    Route::post('/users/change-password', [UserPasswordController::class, 'changePassword']);
 });
 Route::post('forgot-password', [PasswordResetController::class, 'forgotPassword']);
 Route::post('reset-password', [PasswordResetController::class, 'resetPassword']);
