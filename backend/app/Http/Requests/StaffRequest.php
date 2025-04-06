@@ -28,7 +28,7 @@ class StaffRequest extends FormRequest
         return [
             'first_name' => 'required|string',
             'last_name' => 'required|string',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'required|email',
             'role' => 'required|in:admin,registar',
             'school_id' => 'required|exists:schools,id',
         ];
@@ -50,7 +50,6 @@ class StaffRequest extends FormRequest
 
             'email.required' => 'L\'adresse email est obligatoire.',
             'email.email' => 'Veuillez fournir une adresse email valide.',
-            'email.unique' => 'Cette adresse email est déjà utilisée.',
 
             'role.required' => 'Le rôle est obligatoire.',
         ];

@@ -136,7 +136,7 @@ const handleUpdateUser = async () => {
     console.error('Erreur lors de la mise à jour du profil:', error)
     message.value = {
       type: 'error',
-      text: error.response?.data?.message || 'Une erreur est survenue lors de la mise à jour'
+      text:  'Une erreur est survenue lors de la mise à jour'
     }
   }
 }
@@ -171,7 +171,7 @@ const handleUpdatePassword = async () => {
     console.error('Erreur lors de la mise à jour du mot de passe:', error)
     message.value = {
       type: 'error',
-      text: error.response?.data?.message || 'Une erreur est survenue lors de la mise à jour du mot de passe'
+      text:  'Une erreur est survenue lors de la mise à jour du mot de passe'
     }
   }
 }
@@ -213,7 +213,7 @@ const handleUpdateSchool = async () => {
     console.error('Erreur lors de la mise à jour de l\'école:', error)
     message.value = {
       type: 'error',
-      text: error.response?.data?.message || 'Une erreur est survenue lors de la mise à jour de l\'école'
+      text:  'Une erreur est survenue lors de la mise à jour de l\'école'
     }
   }
 }
@@ -239,7 +239,7 @@ const handleCreateUser = async () => {
 
     setFlashMessage({
       type: 'success',
-      message: 'L\'utilisateur a été créé avec succès. Un email d\'invitation lui a été envoyé.'
+      message: 'L\'utilisateur a été créé avec succès.'
     })
 
     if (userListRef.value) {
@@ -257,7 +257,7 @@ const handleCreateUser = async () => {
     console.error('Erreur lors de la création de l\'utilisateur:', error)
     message.value = {
       type: 'error',
-      text: 'Une erreur est survenue lors de la création de l\'utilisateur'
+      text:  'Une erreur est survenue lors de la création de l\'utilisateur'
     }
   }
 }
