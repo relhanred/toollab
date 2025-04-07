@@ -23,6 +23,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     Route::prefix('families')->group(function () {
         Route::post('/', [FamilyController::class, 'store']);
+        Route::get('/', [FamilyController::class, 'index']);
         Route::get('/{family}', [FamilyController::class, 'show']);
         Route::post('/{family}/comments', [FamilyController::class, 'addComment']);
         Route::post('/{family}/students', [FamilyController::class, 'addStudents']);

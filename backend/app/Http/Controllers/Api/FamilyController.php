@@ -7,18 +7,82 @@ use App\Models\Family;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\UserInfo;
+use App\Traits\PaginationTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class FamilyController extends Controller
 {
+    use PaginationTrait;
     const KEY_PHONE = 'phone';
     const KEY_ADDRESS = 'address';
     const KEY_ZIPCODE = 'zipcode';
     const KEY_CITY = 'city';
     const KEY_BIRTHDATE = 'birthdate';
 
+
+    public function index(Request $request)
+    {
+        // Requête de base pour récupérer les familles
+        $query = Family::query();
+
+        // Joindre les données des rôles utilisateurs pour les responsables
+        $query->with(['userRoles' => function ($q) {
+            $q->whereHas('role', function ($query) {
+                $query->where('slug', 'responsible');
+            })->with(['user', 'user.infos']);
+        }]);
+
+        // Compter le nombre d'élèves par famille
+        $query->withCount(['userRoles as students_count' => function ($q) {
+            $q->whereHas('role', function ($query) {
+                $query->where('slug', 'student');
+            });
+        }]);
+
+        // Appliquer la pagination
+        $paginatedData = $this->paginateQuery($query, $request);
+
+        // Formater les données pour l'affichage
+        $formattedItems = collect($paginatedData['items'])->map(function ($family) {
+            // Récupérer le responsable principal
+            $responsable = $family->userRoles->first();
+            $user = $responsable ? $responsable->user : null;
+
+            // Informations utilisateur
+            $userInfos = $user ? collect($user->infos)->pluck('value', 'key')->toArray() : [];
+
+            // Déterminer le statut de paiement (exemple, à remplacer par la logique réelle)
+            $paymentStatuses = ['paid', 'pending', 'incomplete', 'exempted'];
+            $status = $paymentStatuses[array_rand($paymentStatuses)];
+
+            // Retourner les données formatées
+            return [
+                'id' => $family->id,
+                'nom' => $user ? $user->first_name . ' ' . $user->last_name : 'Sans responsable',
+                'nombreEleves' => $family->students_count,
+                'status' => $status,
+                'dateInscription' => $family->created_at->locale('fr_FR')->format('d M Y, H:i'),
+                'contact' => [
+                    'phone' => $userInfos[self::KEY_PHONE] ?? null,
+                    'email' => $user ? $user->email : null,
+                    'address' => $userInfos[self::KEY_ADDRESS] ?? null,
+                    'zipcode' => $userInfos[self::KEY_ZIPCODE] ?? null,
+                    'city' => $userInfos[self::KEY_CITY] ?? null,
+                ]
+            ];
+        });
+
+        // Retourner la réponse
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'items' => $formattedItems,
+                'pagination' => $paginatedData['pagination']
+            ]
+        ]);
+    }
 
     public function store(Request $request)
     {
@@ -115,7 +179,6 @@ class FamilyController extends Controller
             ], 500);
         }
     }
-
     public function show(Family $family)
     {
         $responsibles = $family->userRoles()
@@ -190,32 +253,6 @@ class FamilyController extends Controller
             ]
         ]);
     }
-
-    /**
-     * Vérifie si un utilisateur est responsable d'une famille
-     */
-    private function isUserResponsible($userId, $familyId)
-    {
-        return DB::table('user_roles')
-            ->where('user_id', $userId)
-            ->where('roleable_id', $familyId)
-            ->where('roleable_type', 'family')
-            ->whereExists(function ($query) {
-                $query->select(DB::raw(1))
-                    ->from('roles')
-                    ->whereColumn('roles.id', 'user_roles.role_id')
-                    ->where('roles.slug', 'responsible');
-            })
-            ->exists();
-    }
-
-
-    /**
-     * Ajoute un commentaire à une famille
-     */
-    /**
-     * Ajoute un commentaire à une famille
-     */
     public function addComment(Request $request, Family $family)
     {
         $request->validate([
@@ -256,10 +293,6 @@ class FamilyController extends Controller
             ]
         ]);
     }
-
-    /**
-     * Ajoute des élèves à une famille
-     */
     public function addStudents(Request $request, Family $family)
     {
         $request->validate([
@@ -326,7 +359,6 @@ class FamilyController extends Controller
             ], 500);
         }
     }
-
     public function addResponsible(Request $request, Family $family)
     {
         $request->validate([
@@ -369,7 +401,6 @@ class FamilyController extends Controller
             ]
         ]);
     }
-
     private function getUserClassroom($userId)
     {
         $userRole = DB::table('user_roles')
@@ -384,8 +415,20 @@ class FamilyController extends Controller
             'name' => $userRole->name
         ] : null;
     }
-
-
+    private function isUserResponsible($userId, $familyId)
+    {
+        return DB::table('user_roles')
+            ->where('user_id', $userId)
+            ->where('roleable_id', $familyId)
+            ->where('roleable_type', 'family')
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('roles')
+                    ->whereColumn('roles.id', 'user_roles.role_id')
+                    ->where('roles.slug', 'responsible');
+            })
+            ->exists();
+    }
     private function updateOrCreateUserInfo(User $user, $key, $value)
     {
         if (is_null($value) || $value === '') {
