@@ -260,7 +260,7 @@ class UserController extends Controller
             ->map(function ($userRole) {
                 return [
                     'user' => $userRole->user,
-                    'role' => $userRole->role->name
+                    'role' => $userRole->role->slug
                 ];
             });
     }

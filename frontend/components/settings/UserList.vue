@@ -18,34 +18,30 @@ const message = ref({ type: '', text: '' })
 const showConfirmModal = ref(false)
 const selectedUserForRemoval = ref(null)
 
+// Dictionnaire de traduction
 const roleLabels = {
-  'Director': 'Directeur',
-  'Admin': 'Administrateur',
-  'Registar': 'Responsable des inscriptions',
-  'Teacher': 'Enseignant',
-  'Student': 'Élève',
-  'Responsible': 'Responsable'
+  'director': 'Directeur',
+  'admin': 'Administrateur',
+  'registar': 'Responsable des inscriptions', // Notez la faute dans le slug 'registar'
+  'teacher': 'Enseignant',
+  'student': 'Élève',
+  'responsible': 'Responsable'
 }
 
 const fetchUsers = async () => {
   try {
     isLoading.value = true
-    console.log('Récupération des utilisateurs pour l\'école ID:', props.schoolId)
-
     const response = await apiClient.get(`/api/users/school/${props.schoolId}`)
-    console.log('Réponse API complète:', response.data)
 
-    // Filtrer les rôles concernés
+    // Filtrer les rôles concernés avec les slugs
     const filteredData = response.data.filter(item =>
-        ['Director', 'Admin', 'Registar'].includes(item.role)
+        ['director', 'admin', 'registar'].includes(item.role)
     )
-    console.log('Données filtrées:', filteredData)
 
     const userMap = new Map()
 
     filteredData.forEach(item => {
       const userId = item.user.id
-      console.log('Traitement de l\'utilisateur:', item.user, 'avec rôle:', item.role)
       if (userMap.has(userId)) {
         userMap.get(userId).roles.push(item.role)
       } else {
@@ -57,12 +53,8 @@ const fetchUsers = async () => {
     })
 
     users.value = Array.from(userMap.values())
-    console.log('Utilisateurs finaux:', users.value)
   } catch (error) {
     console.error('Erreur lors de la récupération des utilisateurs:', error)
-    if (error.response) {
-      console.error('Détails de l\'erreur:', error.response.data)
-    }
     message.value = {
       type: 'error',
       text: 'Une erreur est survenue lors de la récupération des utilisateurs'
@@ -174,13 +166,13 @@ defineExpose({
                   :key="role"
                   class="px-2 py-1 inline-flex items-center text-xs leading-5 font-semibold rounded-full group"
                   :class="{
-                  'bg-purple-100 text-purple-800': role === 'Director',
-                  'bg-blue-100 text-blue-800': role === 'Admin',
-                  'bg-green-100 text-green-800': role === 'Registar'
+                  'bg-purple-100 text-purple-800': role === 'director',
+                  'bg-blue-100 text-blue-800': role === 'admin',
+                  'bg-green-100 text-green-800': role === 'registar'
                 }">
-                <span>{{ roleLabels[role] || role }}</span>
+                <span>{{ roleLabels[role] }}</span>
                 <button
-                    v-if="role !== 'Director'"
+                    v-if="role !== 'director'"
                     @click="openRemoveRoleModal(user.user.id, role)"
                     class="ml-1.5 text-gray-400 hover:text-red-600 focus:outline-none transition-colors"
                     title="Supprimer ce rôle">

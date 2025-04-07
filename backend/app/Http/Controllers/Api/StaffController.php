@@ -103,7 +103,8 @@ class StaffController extends Controller
         DB::beginTransaction();
 
         try {
-            $role = Role::where('name', $request->role_name)->first();
+            // Trouver le rôle par son slug plutôt que par son nom
+            $role = Role::where('slug', strtolower($request->role_name))->first();
             if (!$role) {
                 return response()->json([
                     'message' => 'Le rôle spécifié n\'existe pas'
