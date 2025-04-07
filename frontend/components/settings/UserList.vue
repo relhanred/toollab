@@ -32,9 +32,26 @@ const fetchUsers = async () => {
     isLoading.value = true
     const response = await apiClient.get(`/api/users/school/${props.schoolId}`)
 
-    users.value = response.data.filter(item =>
+    // Filtrer les rôles concernés
+    const filteredData = response.data.filter(item =>
         ['Director', 'Admin', 'Registar'].includes(item.role)
     )
+
+    const userMap = new Map()
+
+    filteredData.forEach(item => {
+      const userId = item.user.id
+      if (userMap.has(userId)) {
+        userMap.get(userId).roles.push(item.role)
+      } else {
+        userMap.set(userId, {
+          user: item.user,
+          roles: [item.role]
+        })
+      }
+    })
+
+    users.value = Array.from(userMap.values())
   } catch (error) {
     console.error('Erreur lors de la récupération des utilisateurs:', error)
     message.value = {
@@ -125,10 +142,7 @@ defineExpose({
             Email
           </th>
           <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Rôle
-          </th>
-          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Actions
+            Rôles
           </th>
         </tr>
         </thead>
@@ -144,24 +158,27 @@ defineExpose({
               {{ user.user.email }}
             </div>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                    :class="{
-                      'bg-purple-100 text-purple-800': user.role === 'Director',
-                      'bg-blue-100 text-blue-800': user.role === 'Admin',
-                      'bg-green-100 text-green-800': user.role === 'Registar'
-                    }">
-                {{ roleLabels[user.role] || user.role }}
-              </span>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-            <button
-                v-if="user.role !== 'Director'"
-                @click="openRemoveRoleModal(user.user.id, user.role)"
-                class="text-red-600 hover:text-red-900 ml-2 p-1 rounded hover:bg-gray-100"
-                title="Supprimer le rôle">
-              <Trash class="size-4" />
-            </button>
+          <td class="px-6 py-4">
+            <div class="flex flex-wrap gap-2">
+              <div
+                  v-for="role in user.roles"
+                  :key="role"
+                  class="px-2 py-1 inline-flex items-center text-xs leading-5 font-semibold rounded-full group"
+                  :class="{
+                  'bg-purple-100 text-purple-800': role === 'Director',
+                  'bg-blue-100 text-blue-800': role === 'Admin',
+                  'bg-green-100 text-green-800': role === 'Registar'
+                }">
+                <span>{{ roleLabels[role] || role }}</span>
+                <button
+                    v-if="role !== 'Director'"
+                    @click="openRemoveRoleModal(user.user.id, role)"
+                    class="ml-1.5 text-gray-400 hover:text-red-600 focus:outline-none transition-colors"
+                    title="Supprimer ce rôle">
+                  <Trash class="size-3.5" />
+                </button>
+              </div>
+            </div>
           </td>
         </tr>
         </tbody>

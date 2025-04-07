@@ -34,19 +34,19 @@ class StaffController extends Controller
                 ->where('user_id', $existingUser->id)
                 ->first();
 
-            if ($existingRole) {
-                $existingRole->update([
-                    'role_id' => $role->id,
-                ]);
+            $existingRoleWithSameType = $school->userRoles()
+                ->where('user_id', $existingUser->id)
+                ->where('role_id', $role->id)
+                ->first();
 
-                $message = 'Le rôle de l\'utilisateur existant a été mis à jour.';
+            if ($existingRoleWithSameType) {
+                $message = 'L\'utilisateur possède déjà ce rôle dans cette école.';
             } else {
                 $school->userRoles()->create([
                     'user_id' => $existingUser->id,
                     'role_id' => $role->id,
                 ]);
-
-                $message = 'Utilisateur existant ajouté à l\'école avec le rôle spécifié.';
+                $message = 'Nouveau rôle ajouté à l\'utilisateur existant.';
             }
 
             $user = $existingUser;
