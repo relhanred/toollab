@@ -62,28 +62,40 @@ const roles = [
 
 const checkUserRoles = async () => {
   try {
-    const response = await apiClient.get(`/api/users/${user.value.id}/roles`)
-    const userRoles = response.data.roles
+
+    const response = await apiClient.get(`/api/users/${user.value.id}/roles`);
+    const userRoles = response.data.roles;
 
     if (userRoles.schools && userRoles.schools.length) {
-      const directorRole = userRoles.schools.find(role => role.role === 'Director')
-      const adminRole = userRoles.schools.find(role => role.role === 'Admin')
+      const directorRole = userRoles.schools.find(role =>
+          role.role.toLowerCase() === 'director' ||
+          role.role.toLowerCase() === 'directeur'
+      );
+
+      const adminRole = userRoles.schools.find(role =>
+          role.role.toLowerCase() === 'admin' ||
+          role.role.toLowerCase() === 'administrateur'
+      );
+
 
       if (directorRole) {
-        isDirector.value = true
-        const schoolResponse = await apiClient.get(`/api/schools/${directorRole.context.id}`)
-        school.value = schoolResponse.data
-        populateSchoolForm()
+        isDirector.value = true;
+        const schoolResponse = await apiClient.get(`/api/schools/${directorRole.context.id}`);
+        school.value = schoolResponse.data;
+        populateSchoolForm();
       } else if (adminRole) {
-        isAdmin.value = true
-        const schoolResponse = await apiClient.get(`/api/schools/${adminRole.context.id}`)
-        school.value = schoolResponse.data
+        isAdmin.value = true;
+        const schoolResponse = await apiClient.get(`/api/schools/${adminRole.context.id}`);
+        school.value = schoolResponse.data;
       }
     }
   } catch (error) {
-    console.error('Erreur lors de la vérification du rôle:', error)
+    console.error('Erreur lors de la vérification du rôle:', error);
+    if (error.response) {
+      console.error('Détails de l\'erreur:', error.response.data);
+    }
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
 

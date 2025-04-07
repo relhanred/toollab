@@ -30,17 +30,22 @@ const roleLabels = {
 const fetchUsers = async () => {
   try {
     isLoading.value = true
+    console.log('Récupération des utilisateurs pour l\'école ID:', props.schoolId)
+
     const response = await apiClient.get(`/api/users/school/${props.schoolId}`)
+    console.log('Réponse API complète:', response.data)
 
     // Filtrer les rôles concernés
     const filteredData = response.data.filter(item =>
         ['Director', 'Admin', 'Registar'].includes(item.role)
     )
+    console.log('Données filtrées:', filteredData)
 
     const userMap = new Map()
 
     filteredData.forEach(item => {
       const userId = item.user.id
+      console.log('Traitement de l\'utilisateur:', item.user, 'avec rôle:', item.role)
       if (userMap.has(userId)) {
         userMap.get(userId).roles.push(item.role)
       } else {
@@ -52,8 +57,12 @@ const fetchUsers = async () => {
     })
 
     users.value = Array.from(userMap.values())
+    console.log('Utilisateurs finaux:', users.value)
   } catch (error) {
     console.error('Erreur lors de la récupération des utilisateurs:', error)
+    if (error.response) {
+      console.error('Détails de l\'erreur:', error.response.data)
+    }
     message.value = {
       type: 'error',
       text: 'Une erreur est survenue lors de la récupération des utilisateurs'

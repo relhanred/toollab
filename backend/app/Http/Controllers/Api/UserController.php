@@ -17,36 +17,39 @@ class UserController extends Controller
     /**
      * Format roles for a specific context type
      */
+    /**
+     * Format roles for a specific context type
+     */
     private function formatRoles(User $user, string $type): array
     {
         return $user->roles
-        ->where('roleable_type', $type)
-        ->map(function ($userRole) {
-            $contextName = $userRole->roleable->name;
+            ->where('roleable_type', $type)
+            ->map(function ($userRole) {
+                $contextName = $userRole->roleable->name ?? 'Sans nom';
 
-            if ($userRole->roleable_type === 'family') {
-                $responsibleUser = User::whereHas('roles', function ($query) use ($userRole) {
-                    $query->where('roleable_id', $userRole->roleable_id)
-                          ->where('roleable_type', 'family')
-                          ->whereHas('role', function ($q) {
-                              $q->where('name', 'Responsible');
-                          });
-                })->first();
+                if ($userRole->roleable_type === 'family') {
+                    $responsibleUser = User::whereHas('roles', function ($query) use ($userRole) {
+                        $query->where('roleable_id', $userRole->roleable_id)
+                            ->where('roleable_type', 'family')
+                            ->whereHas('role', function ($q) {
+                                $q->where('name', 'Responsible');
+                            });
+                    })->first();
 
-                if ($responsibleUser) {
-                    $contextName = 'Famille ' . $responsibleUser->last_name;
+                    if ($responsibleUser) {
+                        $contextName = 'Famille ' . $responsibleUser->last_name;
+                    }
                 }
-            }
 
-            return [
-                'role' => $userRole->role->name,
-                'context' => [
-                    'id' => $userRole->roleable->id,
-                    'name' => $contextName,
-                    'type' => class_basename($userRole->roleable_type)
-                ]
-            ];
-        })->values()->toArray();
+                return [
+                    'role' => $userRole->role->name,
+                    'context' => [
+                        'id' => $userRole->roleable->id,
+                        'name' => $contextName,
+                        'type' => class_basename($userRole->roleable_type)
+                    ]
+                ];
+            })->values()->toArray();
     }
 
     /**
@@ -247,14 +250,13 @@ class UserController extends Controller
         ];
     }
 
-    /**
-     * Get users from a specific school
-     */
     public function getSchoolUsers(School $school)
     {
-        return $school->userRoles()
+        $users = $school->userRoles()
             ->with(['user', 'role'])
-            ->get()
+            ->get();
+
+        return $users
             ->map(function ($userRole) {
                 return [
                     'user' => $userRole->user,

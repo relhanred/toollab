@@ -166,7 +166,7 @@ class FamilyController extends Controller
 
         $comments = $family->comments()
             ->with('user')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('created_at')
             ->get()
             ->map(function ($comment) {
                 return [
@@ -223,9 +223,8 @@ class FamilyController extends Controller
             'author_name' => 'nullable|string'
         ]);
 
-        // Utiliser la méthode create du modèle Family pour la relation comments
         $commentData = [
-            'content' => $request->content
+            'content' => $request->input('content')
         ];
 
         if (auth()->check()) {
