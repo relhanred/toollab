@@ -23,6 +23,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     Route::prefix('families')->group(function () {
         Route::post('/', [FamilyController::class, 'store']);
+        Route::get('/{family}', [FamilyController::class, 'show']);
+        Route::post('/{family}/comments', [FamilyController::class, 'addComment']);
+        Route::post('/{family}/students', [FamilyController::class, 'addStudents']);
+        Route::post('/{family}/responsibles', [FamilyController::class, 'addResponsible']);
+    });
+
+    Route::prefix('users')->group(function () {
+        Route::put('/{user}/info', [UserController::class, 'updateUserInfo']);
     });
 });
 Route::post('forgot-password', [PasswordResetController::class, 'forgotPassword']);

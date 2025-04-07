@@ -1,12 +1,9 @@
 <script setup>
-import {ref} from 'vue'
+import {ref, onMounted, computed} from 'vue'
 import HomeTLB from "~/components/Icons/Home-TLB.vue"
 import PhoneTLB from "~/components/Icons/Phone-TLB.vue"
 import MailTLB from "~/components/Icons/Mail-TLB.vue"
 import UserMaleTLB from "~/components/Icons/UserMale-TLB.vue"
-import CardTLB from "~/components/Icons/Card-TLB.vue"
-import CheckTLB from "~/components/Icons/Check-TLB.vue"
-import MonnaieTLB from "~/components/Icons/Monnaie-TLB.vue"
 import UserFemaleTLB from "~/components/Icons/UserFemale-TLB.vue"
 import PaiementEmpty from "~/components/Icons/Paiement-Empty.vue"
 import CommentEmpty from "~/components/Icons/Comment-Empty.vue"
@@ -15,92 +12,244 @@ import PlusLight from "~/components/Icons/PlusLight.vue"
 import AddResponsableModal from "~/components/modals/AddResponsableModal.vue";
 import SaveButton from "~/components/form/SaveButton.vue";
 import AddElevesModal from "~/components/modals/AddElevesModal.vue";
+import apiClient from '~/services/api';
 
-const showAddStudentsModal = ref(false)
+const route = useRoute();
+const loading = ref(true);
+const error = ref(null);
+const family = ref(null);
+const selectedResponsible = ref(null);
 
-const handleAddStudents = (newStudents) => {
-}
-
-const showAddResponsableModal = ref(false)
-const isEditing = ref(false)
+const showAddStudentsModal = ref(false);
+const showAddResponsableModal = ref(false);
+const isEditing = ref(false);
 const contactInfo = ref({
-  name: 'Abdoullah Mohammed',
-  phone: '0612345678',
-  email: 'abdoullah.mohammed@gmail.com',
-  address: '7 rue de la piété, 75020 Paris'
-})
+  name: '',
+  phone: '',
+  email: '',
+  address: ''
+});
 
-const editForm = ref({...contactInfo.value})
+const editForm = ref({...contactInfo.value});
+const comments = ref([]);
+const newComment = ref('');
+const commentsContainer = ref(null);
+
+// Récupérer les détails de la famille
+const fetchFamilyDetails = async () => {
+  try {
+    loading.value = true;
+    error.value = null;
+
+    const response = await apiClient.get(`/api/families/${route.params.id}`);
+    family.value = response.data.data.family;
+
+    if (family.value.responsibles && family.value.responsibles.length > 0) {
+      selectedResponsible.value = family.value.responsibles[0];
+      updateContactInfo();
+    }
+
+    comments.value = family.value.comments || [];
+
+  } catch (err) {
+    console.error('Erreur lors de la récupération des détails de la famille:', err);
+    error.value = 'Impossible de charger les détails de la famille';
+  } finally {
+    loading.value = false;
+  }
+};
+
+const updateContactInfo = () => {
+  if (selectedResponsible.value) {
+    contactInfo.value = {
+      name: `${selectedResponsible.value.first_name} ${selectedResponsible.value.last_name}`,
+      phone: selectedResponsible.value.phone || '',
+      email: selectedResponsible.value.email || '',
+      address: `${selectedResponsible.value.address || ''} ${selectedResponsible.value.zipcode || ''} ${selectedResponsible.value.city || ''}`.trim()
+    };
+    editForm.value = {...contactInfo.value};
+  }
+};
+
+const selectResponsible = (responsible) => {
+  selectedResponsible.value = responsible;
+  updateContactInfo();
+  isEditing.value = false;
+};
 
 const handleEdit = () => {
-  isEditing.value = true
-  editForm.value = {...contactInfo.value}
-}
+  isEditing.value = true;
+  editForm.value = {...contactInfo.value};
+};
 
-const handleSave = () => {
-  contactInfo.value = {...editForm.value}
-  isEditing.value = false
-}
+const handleSave = async () => {
+  try {
+    if (!selectedResponsible.value) return;
 
-const handleAddResponsable = (newResponsable) => {
-}
+    let address = editForm.value.address || '';
+    let zipcode = '';
+    let city = '';
 
-const comments = ref([
-  {
-    id: 1,
-    author: 'Pr. Omar',
-    date: '05/12/2024',
-    content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-  },
-])
+    const addressParts = address.split(' ');
+    if (addressParts.length > 1) {
+      const potentialZipcode = addressParts[addressParts.length - 2];
+      if (/^\d{5}$/.test(potentialZipcode)) {
+        zipcode = potentialZipcode;
+        address = addressParts.slice(0, -2).join(' ');
+        city = addressParts.slice(-1)[0];
+      }
+    }
 
-const newComment = ref('')
-const commentsContainer = ref(null)
+    await apiClient.put(`/api/users/${selectedResponsible.value.id}/info`, {
+      phone: editForm.value.phone,
+      address: address,
+      zipcode: zipcode,
+      city: city
+    });
+
+    contactInfo.value = {...editForm.value};
+    selectedResponsible.value = {
+      ...selectedResponsible.value,
+      phone: editForm.value.phone,
+      address: address,
+      zipcode: zipcode,
+      city: city
+    };
+
+    isEditing.value = false;
+
+    const { setFlashMessage } = useFlashMessage();
+    setFlashMessage({
+      type: 'success',
+      message: 'Informations mises à jour avec succès'
+    });
+
+  } catch (err) {
+    console.error('Erreur lors de la mise à jour des informations:', err);
+    const { setFlashMessage } = useFlashMessage();
+    setFlashMessage({
+      type: 'error',
+      message: 'Erreur lors de la mise à jour des informations'
+    });
+  }
+};
+
+const handleCommentSubmit = async () => {
+  if (newComment.value.trim()) {
+    try {
+      const response = await apiClient.post(`/api/families/${route.params.id}/comments`, {
+        content: newComment.value.trim()
+      });
+
+      comments.value.unshift(response.data.data.comment);
+      newComment.value = '';
+      scrollToBottom();
+
+    } catch (err) {
+      console.error('Erreur lors de l\'ajout du commentaire:', err);
+    }
+  }
+};
+
+const handleAddStudents = async (newStudents) => {
+  try {
+    const response = await apiClient.post(`/api/families/${route.params.id}/students`, {
+      students: newStudents
+    });
+
+    fetchFamilyDetails();
+
+    const { setFlashMessage } = useFlashMessage();
+    setFlashMessage({
+      type: 'success',
+      message: 'Élèves ajoutés avec succès'
+    });
+
+  } catch (err) {
+    console.error('Erreur lors de l\'ajout des élèves:', err);
+    const { setFlashMessage } = useFlashMessage();
+    setFlashMessage({
+      type: 'error',
+      message: 'Erreur lors de l\'ajout des élèves'
+    });
+  }
+};
+
+const handleAddResponsable = async (newResponsable) => {
+  try {
+    if (newResponsable && newResponsable.user) {
+      const response = await apiClient.post(`/api/families/${route.params.id}/responsibles`, {
+        user_id: newResponsable.user.id
+      });
+
+      fetchFamilyDetails();
+
+      const { setFlashMessage } = useFlashMessage();
+      setFlashMessage({
+        type: 'success',
+        message: 'Responsable ajouté avec succès'
+      });
+    }
+  } catch (err) {
+    console.error('Erreur lors de l\'ajout du responsable:', err);
+    const { setFlashMessage } = useFlashMessage();
+    setFlashMessage({
+      type: 'error',
+      message: 'Erreur lors de l\'ajout du responsable'
+    });
+  }
+};
 
 const scrollToBottom = () => {
   nextTick(() => {
     if (commentsContainer.value) {
-      commentsContainer.value.scrollTop = commentsContainer.value.scrollHeight
+      commentsContainer.value.scrollTop = commentsContainer.value.scrollHeight;
     }
-  })
-}
+  });
+};
 
-const handleCommentSubmit = () => {
-  if (newComment.value.trim()) {
-    const comment = {
-      id: comments.value.length + 1,
-      author: 'Pr. Omar',
-      date: new Date().toLocaleDateString(),
-      content: newComment.value.trim()
-    }
-    comments.value.push(comment)
-    newComment.value = ''
-    scrollToBottom()
-  }
-}
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
 
 onMounted(() => {
-  scrollToBottom()
-})
+  fetchFamilyDetails();
+});
 
 definePageMeta({
   layout: 'auth',
   layoutData: {
     title: 'Famille'
   }
-})
+});
 </script>
 
 <template>
-  <div class="flex flex-col w-full pt-3 px-10 font-montserrat">
+  <div v-if="loading" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-default"></div>
+  </div>
+
+  <div v-else-if="error" class="p-6 bg-red-100 text-red-700 rounded-lg m-10">
+    {{ error }}
+  </div>
+
+  <div v-else class="flex flex-col w-full pt-3 px-10 font-montserrat">
     <NuxtLink
         :to="{
-    name: 'family-id-classes',
-    params: { id: $route.params.id }
-  }"
+          name: 'family-id-classes',
+          params: { id: $route.params.id }
+        }"
         class="bg-default text-white px-4 py-2 w-fit rounded-lg hover:opacity-90 inline-flex items-center justify-between gap-x-2 ml-auto">
       <span>Choix des classes</span>
     </NuxtLink>
+
     <div class="grid grid-cols-3 gap-x-20 w-full mt-2">
       <div class="flex flex-col gap-y-6 col-span-1 bg-white py-4 px-10 border rounded-3xl relative">
         <div class="bg-gray-light mr-auto pl-6 pr-8 font-bold font-montserrat text-xl text-center py-2 rounded-xl">
@@ -152,6 +301,7 @@ definePageMeta({
                 v-model="editForm.email"
                 type="email"
                 class="w-full p-1 border rounded focus:border-default focus:ring-0 focus:outline-none"
+                disabled
             >
           </div>
         </div>
@@ -180,6 +330,20 @@ definePageMeta({
             Enregistrer
           </SaveButton>
         </div>
+
+        <div v-if="family.responsibles && family.responsibles.length > 1" class="mt-4">
+          <div class="font-bold text-base mb-2">Autres responsables</div>
+          <div
+              v-for="responsible in family.responsibles"
+              :key="responsible.id"
+              @click="selectResponsible(responsible)"
+              class="cursor-pointer p-2 hover:bg-gray-50 rounded flex items-center gap-2"
+              :class="{'bg-gray-100': selectedResponsible && selectedResponsible.id === responsible.id}"
+          >
+            <ResponsableTLB class="size-5" />
+            <span>{{ responsible.first_name }} {{ responsible.last_name }}</span>
+          </div>
+        </div>
       </div>
 
       <AddElevesModal
@@ -187,8 +351,8 @@ definePageMeta({
           @close="showAddStudentsModal = false"
           @save="handleAddStudents"
       />
-      <div class="grid grid-rows-5 w-full py-4 px-10 col-span-2 bg-white rounded-2xl divide-y border divide-[#E6EFF5] relative">
 
+      <div class="grid grid-rows-5 w-full py-4 px-10 col-span-2 bg-white rounded-2xl divide-y border divide-[#E6EFF5] relative">
         <div class="grid grid-cols-12 font-bold font-montserrat">
           <div class="col-span-7 inline-flex items-center justify-start pl-10">Élève</div>
           <div class="col-span-2 inline-flex items-center justify-start">Classe</div>
@@ -200,40 +364,27 @@ definePageMeta({
             <PlusLight class="size-6"/>
           </button>
         </div>
-        <div class="grid grid-cols-12 font-nunito py-4">
-          <div class="col-span-7 inline-flex items-center justify-start gap-x-2 pl-1">
-            <div class="inline-flex items-center gap-x-3">
-              <ResponsableTLB/>
-              <UserMaleTLB/>
+
+        <template v-if="family.students && family.students.length > 0">
+          <div v-for="(student, index) in family.students" :key="student.id" class="grid grid-cols-12 font-nunito py-4">
+            <div class="col-span-7 inline-flex items-center justify-start gap-x-2 pl-1">
+              <div class="inline-flex items-center gap-x-3">
+                <ResponsableTLB v-if="student.is_responsible" />
+                <component :is="student.gender === 'F' ? UserFemaleTLB : UserMaleTLB" />
+              </div>
+              <span>{{ student.first_name }} {{ student.last_name }}</span>
             </div>
-            <span>Foulane Mohammed</span>
+            <div class="col-span-2 inline-flex items-center justify-start">
+              {{ student.classroom ? student.classroom.name : '-' }}
+            </div>
+            <div class="col-span-3 inline-flex items-center justify-start">
+              {{ formatDate(student.created_at) }}
+            </div>
           </div>
-          <div class="col-span-2 inline-flex items-center justify-start">3eC</div>
-          <div class="col-span-3 inline-flex items-center justify-start">28 Jan, 12.30 AM</div>
-        </div>
-        <div class="grid grid-cols-12 font-nunito py-4">
-          <div class="col-span-7 inline-flex items-center justify-start gap-x-2 pl-10">
-            <UserMaleTLB/>
-            <span>Bilal Mohammed</span>
-          </div>
-          <div class="col-span-2 inline-flex items-center justify-start">5eB</div>
-          <div class="col-span-3 inline-flex items-center justify-start">25 Jan, 10.40 PM</div>
-        </div>
-        <div class="grid grid-cols-12 font-nunito py-4">
-          <div class="col-span-7 inline-flex items-center justify-start gap-x-2 pl-10">
-            <UserFemaleTLB/>
-            <span>Fatima Mohammed</span>
-          </div>
-          <div class="col-span-2 inline-flex items-center justify-start">1eA</div>
-          <div class="col-span-3 inline-flex items-center justify-start">20 Jan, 10.40 PM</div>
-        </div>
-        <div class="grid grid-cols-12 font-nunito py-4">
-          <div class="col-span-7 inline-flex items-center justify-start gap-x-2 pl-10">
-            <UserFemaleTLB/>
-            <span>Khadija Mohammed</span>
-          </div>
-          <div class="col-span-2 inline-flex items-center justify-start">5eA</div>
-          <div class="col-span-3 inline-flex items-center justify-start">15 Jan, 03.29 PM</div>
+        </template>
+
+        <div v-else class="col-span-12 py-10 text-center text-gray-500">
+          Aucun élève enregistré pour cette famille.
         </div>
       </div>
     </div>
@@ -241,33 +392,7 @@ definePageMeta({
     <div class="grid grid-cols-2 gap-x-20 w-full h-[23rem] mt-2">
       <div class="flex flex-col gap-y-6 col-span-1 bg-white py-4 border rounded-3xl">
         <div class="font-bold text-2xl font-montserrat px-10">Paiements</div>
-        <div class="flex flex-col divide-y divide-[#E6EFF5] px-6" v-if="0 !== true">
-          <div class="grid grid-cols-12 px-4 py-3 font-nunito">
-            <div class="col-span-1 inline-flex items-center justify-center">
-              <CardTLB/>
-            </div>
-            <div class="col-span-7 inline-flex items-center pl-2">Foulane M.</div>
-            <div class="col-span-3 inline-flex items-center">Arabe</div>
-            <div class="col-span-1 inline-flex items-center">250€</div>
-          </div>
-          <div class="grid grid-cols-12 px-4 py-3 font-nunito">
-            <div class="col-span-1 inline-flex items-center justify-center">
-              <CheckTLB/>
-            </div>
-            <div class="col-span-7 inline-flex items-center pl-2">Fatima M.</div>
-            <div class="col-span-3 inline-flex items-center">Coran</div>
-            <div class="col-span-1 inline-flex items-center">150€</div>
-          </div>
-          <div class="grid grid-cols-12 px-4 py-3 font-nunito">
-            <div class="col-span-1 inline-flex items-center justify-center">
-              <MonnaieTLB/>
-            </div>
-            <div class="col-span-7 inline-flex items-center pl-2">Bilal M.</div>
-            <div class="col-span-3 inline-flex items-center">Coran</div>
-            <div class="col-span-1 inline-flex items-center">150€</div>
-          </div>
-        </div>
-        <div class="inline-flex flex-col items-center justify-center gap-y-4 w-full" v-else>
+        <div class="inline-flex flex-col items-center justify-center gap-y-4 w-full">
           <PaiementEmpty width="250" height="200"/>
           <div class="font-montserrat text-base text-placeholder font-medium">Aucun paiement</div>
         </div>
@@ -298,12 +423,12 @@ definePageMeta({
         </div>
 
         <form @submit.prevent="handleCommentSubmit" class="flex gap-x-4 items-center justify-center">
-      <textarea
-          v-model="newComment"
-          placeholder="Écrivez votre commentaire..."
-          rows="3"
-          class="flex-1 p-3 text-xs font-montserrat border rounded-lg resize-none focus:outline-none focus:ring-1 focus:ring-default"
-      ></textarea>
+          <textarea
+              v-model="newComment"
+              placeholder="Écrivez votre commentaire..."
+              rows="3"
+              class="flex-1 p-3 text-xs font-montserrat border rounded-lg resize-none focus:outline-none focus:ring-1 focus:ring-default"
+          ></textarea>
           <button
               type="submit"
               class="px-5 py-2 bg-default text-white rounded-lg hover:opacity-90 transition-opacity text-sm font-nunito"

@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Role;
+use App\Models\Classroom;
 use App\Models\User;
 use App\Models\School;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserRequest;
@@ -134,6 +135,46 @@ class UserController extends Controller
             });
 
         return $users;
+    }
+
+    /**
+     * Mettre à jour les informations d'un utilisateur
+     */
+    public function updateUserInfo(Request $request, User $user)
+    {
+        $request->validate([
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'zipcode' => 'nullable|string|max:20',
+            'city' => 'nullable|string|max:255',
+            'birthdate' => 'nullable|date',
+        ]);
+
+        // Liste des clés valides pour les infos utilisateur
+        $validKeys = ['phone', 'address', 'zipcode', 'city', 'birthdate'];
+
+        // Mettre à jour les infos utilisateur
+        foreach ($validKeys as $key) {
+            if ($request->has($key)) {
+                UserInfo::updateOrCreate(
+                    [
+                        'user_id' => $user->id,
+                        'key' => $key
+                    ],
+                    [
+                        'value' => $request->input($key)
+                    ]
+                );
+            }
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Informations utilisateur mises à jour avec succès',
+            'data' => [
+                'user' => $user->load('infos')
+            ]
+        ]);
     }
 
     /**
