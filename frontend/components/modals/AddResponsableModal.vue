@@ -5,7 +5,7 @@ import SaveButton from "~/components/form/SaveButton.vue";
 import CancelButton from "~/components/form/CancelButton.vue";
 import ToogleButton from "~/components/form/ToogleButton.vue";
 import DatePicker from "~/components/form/DatePicker.vue";
-
+import apiClient from '~/services/api';
 
 defineProps({
   isOpen: {
@@ -16,6 +16,8 @@ defineProps({
 
 const isEleve = ref(false);
 const emit = defineEmits(['close', 'save'])
+const isSubmitting = ref(false);
+const error = ref('');
 
 const formData = ref({
   firstname: '',
@@ -25,27 +27,70 @@ const formData = ref({
   address: '',
   zipcode: '',
   city: '',
-  birthdate: ''
+  birthdate: '',
+  is_student: false
 })
 
-const handleSave = () => {
-  emit('save', {...formData.value})
-  formData.value = {
-    firstname: '',
-    lastname: '',
-    phone: '',
-    email: '',
-    address: '',
-    zipcode: '',
-    city: ''
+const handleSave = async () => {
+  try {
+    isSubmitting.value = true;
+    error.value = '';
+
+    // Vérifier les champs requis
+    if (!formData.value.firstname || !formData.value.lastname || !formData.value.email) {
+      error.value = 'Veuillez remplir tous les champs obligatoires.';
+      return;
+    }
+
+    // Préparer les données pour l'API
+    const payload = {
+      ...formData.value,
+      is_student: isEleve.value
+    };
+
+    // Appel API pour créer une famille
+    const response = await apiClient.post('/api/families', payload);
+
+    // Réinitialiser le formulaire
+    formData.value = {
+      firstname: '',
+      lastname: '',
+      phone: '',
+      email: '',
+      address: '',
+      zipcode: '',
+      city: '',
+      birthdate: ''
+    };
+
+    // Notifier le composant parent du succès
+    emit('save', response.data.data);
+    emit('close');
+
+    // Afficher un message de succès
+    const { setFlashMessage } = useFlashMessage();
+    setFlashMessage({
+      type: 'success',
+      message: response.data.message || 'Famille créée avec succès'
+    });
+
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Une erreur est survenue lors de la création de la famille';
+    console.error('Erreur lors de la création de la famille:', err);
+  } finally {
+    isSubmitting.value = false;
   }
-  emit('close')
 }
+
+// Observer les changements du toggle
+watch(isEleve, (newValue) => {
+  formData.value.is_student = newValue;
+});
 </script>
 
 <template>
   <div v-if="isOpen" class="fixed inset-0 font-nunito bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl px-12 pt-6 pb-10 w-[50rem]">
+    <div class="bg-white rounded-2xl px-12 pt-6 pb-10 w-[50rem] max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-bold mx-auto">Ajouter un responsable</h2>
         <button @click="$emit('close')" class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-50">
@@ -56,6 +101,9 @@ const handleSave = () => {
       </div>
       <div class="w-full h-px border rounded-xl bg-gray-200"></div>
 
+      <div v-if="error" class="bg-red-100 text-red-800 p-3 rounded mt-4 mb-2">
+        {{ error }}
+      </div>
 
       <div class="text-xl font-bold pl-2 text-default mt-10 mb-6">Responsable</div>
       <div class="grid grid-cols-2 gap-6 ">
@@ -96,8 +144,10 @@ const handleSave = () => {
       </div>
 
       <div class="flex justify-center gap-x-3 mt-10">
-        <CancelButton @click="$emit('close')">Annuler</CancelButton>
-        <SaveButton @click="handleSave">Enregistrer</SaveButton>
+        <CancelButton @click="$emit('close')" :disabled="isSubmitting">Annuler</CancelButton>
+        <SaveButton @click="handleSave" :disabled="isSubmitting">
+          {{ isSubmitting ? 'Création en cours...' : 'Enregistrer' }}
+        </SaveButton>
       </div>
     </div>
   </div>

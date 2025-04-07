@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\FamilyController;
 use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\SchoolController;
 use App\Http\Controllers\Api\StaffController;
@@ -19,6 +20,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/users/create-staff', [StaffController::class, 'createStaffUser']);
     Route::post('/users/remove-role', [StaffController::class, 'removeUserRole']);
     Route::post('/users/change-password', [UserPasswordController::class, 'changePassword']);
+
+    Route::prefix('families')->group(function () {
+        Route::post('/', [FamilyController::class, 'store']);
+    });
 });
 Route::post('forgot-password', [PasswordResetController::class, 'forgotPassword']);
 Route::post('reset-password', [PasswordResetController::class, 'resetPassword']);

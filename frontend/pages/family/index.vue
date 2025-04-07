@@ -1,3 +1,4 @@
+
 <script setup>
 import PlusLight from "~/components/Icons/PlusLight.vue";
 import ResponsableTLB from "~/components/Icons/Responsable-TLB.vue";
@@ -14,7 +15,13 @@ definePageMeta({
 const showAddResponsableModal = ref(false);
 
 const handleAddResponsable = async (newResponsable) => {
-  navigateTo('family/6');
+  try {
+    if (newResponsable && newResponsable.family_id) {
+      navigateTo(`/family/${newResponsable.family_id}`);
+    }
+  } catch (error) {
+    console.error('Erreur lors de la redirection vers la famille:', error);
+  }
 }
 
 const responsables = ref([
