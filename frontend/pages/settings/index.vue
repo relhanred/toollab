@@ -52,7 +52,7 @@ const newUserForm = ref({
   first_name: '',
   last_name: '',
   email: '',
-  role: 'admin'
+  role: 'registar'
 })
 
 const roles = [

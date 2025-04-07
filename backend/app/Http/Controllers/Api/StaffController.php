@@ -8,12 +8,14 @@ use App\Models\InvitationToken;
 use App\Models\Role;
 use App\Models\School;
 use App\Models\User;
+use App\Models\UserRole;
 use App\Notifications\StaffInvitation;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class StaffController extends Controller
 {
-
     public function createStaffUser(StaffRequest $request)
     {
         $school = School::findOrFail($request->school_id);
@@ -85,5 +87,62 @@ class StaffController extends Controller
                 'role' => $role->name,
             ]
         ], 201);
+    }
+
+    public function removeUserRole(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'school_id' => 'required|exists:schools,id',
+            'role_name' => 'required|string'
+        ]);
+
+        $user = User::findOrFail($request->user_id);
+        $school = School::findOrFail($request->school_id);
+
+        DB::beginTransaction();
+
+        try {
+            $role = Role::where('name', $request->role_name)->first();
+            if (!$role) {
+                return response()->json([
+                    'message' => 'Le rôle spécifié n\'existe pas'
+                ], 422);
+            }
+
+            $deleted = UserRole::where('user_id', $user->id)
+                ->where('role_id', $role->id)
+                ->where('roleable_id', $school->id)
+                ->where('roleable_type', 'school')
+                ->delete();
+
+            if (!$deleted) {
+                return response()->json([
+                    'message' => 'Le rôle n\'a pas pu être supprimé'
+                ], 404);
+            }
+
+            $hasRoles = UserRole::where('user_id', $user->id)->exists();
+
+            if (!$hasRoles) {
+                $user->delete();
+                $message = 'L\'utilisateur a été supprimé car il n\'avait plus aucun rôle';
+            } else {
+                $message = 'Le rôle de l\'utilisateur pour cette école a été supprimé';
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => $message
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Une erreur est survenue lors de la suppression du rôle',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

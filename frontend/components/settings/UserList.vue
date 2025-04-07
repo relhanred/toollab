@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, defineProps, defineEmits } from 'vue'
 import apiClient from '~/services/api.js'
-import Trash from "~/components/Icons/Trash.vue";
+import Trash from "~/components/Icons/Trash.vue"
 
 const props = defineProps({
   schoolId: {
@@ -15,6 +15,8 @@ const emit = defineEmits(['update'])
 const users = ref([])
 const isLoading = ref(true)
 const message = ref({ type: '', text: '' })
+const showConfirmModal = ref(false)
+const selectedUserForRemoval = ref(null)
 
 const roleLabels = {
   'Director': 'Directeur',
@@ -30,7 +32,6 @@ const fetchUsers = async () => {
     isLoading.value = true
     const response = await apiClient.get(`/api/users/school/${props.schoolId}`)
 
-    // On filtre pour n'avoir que les rôles Director, Admin et Registar
     users.value = response.data.filter(item =>
         ['Director', 'Admin', 'Registar'].includes(item.role)
     )
@@ -45,27 +46,42 @@ const fetchUsers = async () => {
   }
 }
 
-const confirmDelete = async (userId) => {
-  if (!confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
-    return
-  }
+const openRemoveRoleModal = (userId, roleName) => {
+  selectedUserForRemoval.value = { userId, roleName };
+  showConfirmModal.value = true;
+}
+
+const closeConfirmModal = () => {
+  showConfirmModal.value = false;
+  selectedUserForRemoval.value = null;
+}
+
+const removeRole = async () => {
+  if (!selectedUserForRemoval.value) return;
 
   try {
-    await apiClient.delete(`/api/users/${userId}`)
-    await fetchUsers()
-    emit('update')
+    await apiClient.post('/api/users/remove-role', {
+      user_id: selectedUserForRemoval.value.userId,
+      school_id: props.schoolId,
+      role_name: selectedUserForRemoval.value.roleName
+    });
 
-    const { setFlashMessage } = useFlashMessage()
+    await fetchUsers();
+    emit('update');
+
+    const { setFlashMessage } = useFlashMessage();
     setFlashMessage({
       type: 'success',
-      message: 'Utilisateur supprimé avec succès'
-    })
+      message: 'Le rôle de l\'utilisateur a été supprimé avec succès'
+    });
   } catch (error) {
-    console.error('Erreur lors de la suppression de l\'utilisateur:', error)
+    console.error('Erreur lors de la suppression du rôle:', error);
     message.value = {
       type: 'error',
-      text: 'Une erreur est survenue lors de la suppression de l\'utilisateur'
-    }
+      text: error.response?.data?.message || 'Une erreur est survenue lors de la suppression du rôle'
+    };
+  } finally {
+    closeConfirmModal();
   }
 }
 
@@ -73,7 +89,6 @@ onMounted(() => {
   fetchUsers()
 })
 
-// Pour mettre à jour la liste après l'ajout d'un utilisateur
 defineExpose({
   refreshUsers: fetchUsers
 })
@@ -142,9 +157,9 @@ defineExpose({
           <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
             <button
                 v-if="user.role !== 'Director'"
-                @click="confirmDelete(user.user.id)"
+                @click="openRemoveRoleModal(user.user.id, user.role)"
                 class="text-red-600 hover:text-red-900 ml-2 p-1 rounded hover:bg-gray-100"
-                title="Supprimer">
+                title="Supprimer le rôle">
               <Trash class="size-4" />
             </button>
           </td>
@@ -152,5 +167,14 @@ defineExpose({
         </tbody>
       </table>
     </div>
+
+    <ConfirmationModal
+        :is-open="showConfirmModal"
+        title="Supprimer le rôle"
+        message="Êtes-vous sûr de vouloir supprimer ce rôle pour cet utilisateur ?"
+        confirm-button-text="Supprimer"
+        @confirm="removeRole"
+        @cancel="closeConfirmModal"
+    />
   </div>
 </template>

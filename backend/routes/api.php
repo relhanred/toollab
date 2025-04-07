@@ -9,14 +9,15 @@ use App\Http\Controllers\Api\UserPasswordController;
 use App\Http\Controllers\PasswordResetController;
 use Illuminate\Support\Facades\Route;
 
- Route::post('register', [AuthController::class, 'register']);
- Route::post('login', [AuthController::class, 'login']);
+Route::post('register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::apiResource('users', UserController::class);
 
     Route::post('/users/create-staff', [StaffController::class, 'createStaffUser']);
+    Route::post('/users/remove-role', [StaffController::class, 'removeUserRole']);
     Route::post('/users/change-password', [UserPasswordController::class, 'changePassword']);
 });
 Route::post('forgot-password', [PasswordResetController::class, 'forgotPassword']);
