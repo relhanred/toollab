@@ -28,7 +28,9 @@ const contactInfo = ref({
   name: '',
   phone: '',
   email: '',
-  address: ''
+  street: '',  // Champ "voie"
+  zipcode: '',  // Champ "code postal"
+  city: ''      // Champ "ville"
 });
 
 const editForm = ref({...contactInfo.value});
@@ -66,7 +68,9 @@ const updateContactInfo = () => {
       name: `${selectedResponsible.value.first_name} ${selectedResponsible.value.last_name}`,
       phone: selectedResponsible.value.phone || '',
       email: selectedResponsible.value.email || '',
-      address: `${selectedResponsible.value.address || ''} ${selectedResponsible.value.zipcode || ''} ${selectedResponsible.value.city || ''}`.trim()
+      street: selectedResponsible.value.address || '',
+      zipcode: selectedResponsible.value.zipcode || '',
+      city: selectedResponsible.value.city || ''
     };
     editForm.value = {...contactInfo.value};
   }
@@ -87,34 +91,20 @@ const handleSave = async () => {
   try {
     if (!selectedResponsible.value) return;
 
-    let address = editForm.value.address || '';
-    let zipcode = '';
-    let city = '';
-
-    const addressParts = address.split(' ');
-    if (addressParts.length > 1) {
-      const potentialZipcode = addressParts[addressParts.length - 2];
-      if (/^\d{5}$/.test(potentialZipcode)) {
-        zipcode = potentialZipcode;
-        address = addressParts.slice(0, -2).join(' ');
-        city = addressParts.slice(-1)[0];
-      }
-    }
-
     await userService.updateUserInfo(selectedResponsible.value.id, {
       phone: editForm.value.phone,
-      address: address,
-      zipcode: zipcode,
-      city: city
+      address: editForm.value.street,
+      zipcode: editForm.value.zipcode,
+      city: editForm.value.city
     });
 
     contactInfo.value = {...editForm.value};
     selectedResponsible.value = {
       ...selectedResponsible.value,
       phone: editForm.value.phone,
-      address: address,
-      zipcode: zipcode,
-      city: city
+      address: editForm.value.street,
+      zipcode: editForm.value.zipcode,
+      city: editForm.value.city
     };
 
     isEditing.value = false;
@@ -301,18 +291,44 @@ definePageMeta({
         <div class="w-full border rounded-xl bg-[#d9d9D9]"></div>
         <div class="flex flex-col justify-center gap-y-0.5">
           <div class="font-bold text-base mb-1">Adresse</div>
-          <div class="inline-flex items-center gap-x-2 font-montserrat text-xs text-default font-medium">
-            <HomeTLB/>
-            <template v-if="!isEditing">
-              <span>{{ contactInfo.address }}</span>
-            </template>
-            <input
-                v-else
-                v-model="editForm.address"
-                type="text"
-                class="w-full p-1 border rounded focus:border-default focus:ring-0 focus:outline-none"
-            >
-          </div>
+
+          <!-- Affichage de l'adresse quand on n'est pas en mode édition -->
+          <template v-if="!isEditing">
+            <div class="inline-flex items-center gap-x-2 font-montserrat text-xs text-default font-medium">
+              <HomeTLB/>
+              <span>{{ contactInfo.street }}</span>
+            </div>
+            <div class="pl-6 font-montserrat text-xs text-default font-medium">
+              {{ contactInfo.zipcode }} {{ contactInfo.city }}
+            </div>
+          </template>
+
+          <!-- Formulaire d'édition pour l'adresse -->
+          <template v-else>
+            <div class="inline-flex items-center gap-x-2 font-montserrat text-xs text-default font-medium mb-2">
+              <HomeTLB/>
+              <input
+                  v-model="editForm.street"
+                  type="text"
+                  placeholder="Voie"
+                  class="w-full p-1 border rounded focus:border-default focus:ring-0 focus:outline-none"
+              >
+            </div>
+            <div class="grid grid-cols-2 gap-x-2 pl-6">
+              <input
+                  v-model="editForm.zipcode"
+                  type="text"
+                  placeholder="Code postal"
+                  class="w-full p-1 border rounded focus:border-default focus:ring-0 focus:outline-none text-xs"
+              >
+              <input
+                  v-model="editForm.city"
+                  type="text"
+                  placeholder="Ville"
+                  class="w-full p-1 border rounded focus:border-default focus:ring-0 focus:outline-none text-xs"
+              >
+            </div>
+          </template>
         </div>
 
         <div class="flex justify-center" v-if="isEditing">
