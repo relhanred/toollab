@@ -18,25 +18,19 @@ trait PaginationTrait
      */
     protected function paginateQuery(Builder $query, Request $request, int $defaultPerPage = 10): array
     {
-        // Récupérer les paramètres de pagination depuis la requête
         $page = (int) $request->input('page', 1);
         $perPage = (int) $request->input('per_page', $defaultPerPage);
 
-        // Limiter le nombre d'éléments par page pour éviter les abus
         $perPage = min($perPage, 100);
 
-        // Récupérer le nombre total d'éléments
         $total = $query->count();
 
-        // Paginer les résultats
         $items = $query->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
 
-        // Calculer le nombre total de pages
         $totalPages = ceil($total / $perPage);
 
-        // Retourner les résultats avec les informations de pagination
         return [
             'items' => $items,
             'pagination' => [

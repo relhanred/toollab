@@ -20,7 +20,6 @@ class ApiResponseMiddleware
         $statusCode = $response->getStatusCode();
         $data = $response->getData(true);
 
-        // No error handling
         if ($statusCode >= 400) {
             return $response;
         }

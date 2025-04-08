@@ -24,7 +24,6 @@ class AppServiceProvider extends ServiceProvider
             'school' => 'App\Models\School',
             'classroom' => 'App\Models\Classroom',
             'family' => 'App\Models\Family',
-            // Ajoutez d'autres modèles qui pourraient être utilisés dans la relation roleable
         ]);
 
 //        Relation::enforceMorphMap([

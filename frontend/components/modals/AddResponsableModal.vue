@@ -36,22 +36,18 @@ const handleSave = async () => {
     isSubmitting.value = true;
     error.value = '';
 
-    // Vérifier les champs requis
     if (!formData.value.firstname || !formData.value.lastname || !formData.value.email) {
       error.value = 'Veuillez remplir tous les champs obligatoires.';
       return;
     }
 
-    // Préparer les données pour l'API
     const payload = {
       ...formData.value,
       is_student: isEleve.value
     };
 
-    // Appel API pour créer une famille
     const response = await familyService.createFamily(payload);
 
-    // Réinitialiser le formulaire
     formData.value = {
       firstname: '',
       lastname: '',
@@ -63,11 +59,9 @@ const handleSave = async () => {
       birthdate: ''
     };
 
-    // Notifier le composant parent du succès
     emit('save', response.data);
     emit('close');
 
-    // Afficher un message de succès
     const { setFlashMessage } = useFlashMessage();
     setFlashMessage({
       type: 'success',
@@ -82,7 +76,6 @@ const handleSave = async () => {
   }
 }
 
-// Observer les changements du toggle
 watch(isEleve, (newValue) => {
   formData.value.is_student = newValue;
 });

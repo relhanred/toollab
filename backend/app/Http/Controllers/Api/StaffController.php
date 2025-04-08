@@ -103,7 +103,6 @@ class StaffController extends Controller
         DB::beginTransaction();
 
         try {
-            // Trouver le rôle par son slug plutôt que par son nom
             $role = Role::where('slug', strtolower($request->role_name))->first();
             if (!$role) {
                 return response()->json([

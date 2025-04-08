@@ -24,40 +24,31 @@ class FamilyController extends Controller
 
     public function index(Request $request)
     {
-        // Requête de base pour récupérer les familles
         $query = Family::query();
 
-        // Joindre les données des rôles utilisateurs pour les responsables
         $query->with(['userRoles' => function ($q) {
             $q->whereHas('role', function ($query) {
                 $query->where('slug', 'responsible');
             })->with(['user', 'user.infos']);
         }]);
 
-        // Compter le nombre d'élèves par famille
         $query->withCount(['userRoles as students_count' => function ($q) {
             $q->whereHas('role', function ($query) {
                 $query->where('slug', 'student');
             });
         }]);
 
-        // Appliquer la pagination
         $paginatedData = $this->paginateQuery($query, $request);
 
-        // Formater les données pour l'affichage
         $formattedItems = collect($paginatedData['items'])->map(function ($family) {
-            // Récupérer le responsable principal
             $responsable = $family->userRoles->first();
             $user = $responsable ? $responsable->user : null;
 
-            // Informations utilisateur
             $userInfos = $user ? collect($user->infos)->pluck('value', 'key')->toArray() : [];
 
-            // Déterminer le statut de paiement (exemple, à remplacer par la logique réelle)
             $paymentStatuses = ['paid', 'pending', 'incomplete', 'exempted'];
             $status = $paymentStatuses[array_rand($paymentStatuses)];
 
-            // Retourner les données formatées
             return [
                 'id' => $family->id,
                 'nom' => $user ? $user->first_name . ' ' . $user->last_name : 'Sans responsable',
@@ -74,7 +65,6 @@ class FamilyController extends Controller
             ];
         });
 
-        // Retourner la réponse
         return response()->json([
             'status' => 'success',
             'data' => [
@@ -223,7 +213,7 @@ class FamilyController extends Controller
                     'birthdate' => $userInfos[self::KEY_BIRTHDATE] ?? null,
                     'is_responsible' => $this->isUserResponsible($user->id, $userRole->roleable_id),
                     'role' => $userRole->role->name,
-                    'classroom' => $this->getUserClassroom($user->id) // Méthode supplémentaire à implémenter
+                    'classroom' => $this->getUserClassroom($user->id)
                 ];
             });
 
@@ -317,22 +307,18 @@ class FamilyController extends Controller
         DB::beginTransaction();
         try {
             foreach ($request->students as $studentData) {
-                // Créer un nouvel utilisateur pour l'élève
                 $student = User::create([
                     'first_name' => $studentData['firstname'],
                     'last_name' => $studentData['lastname'],
-                    'email' => 'student_' . uniqid() . '@example.com', // Email temporaire
-                    'password' => Hash::make(uniqid()), // Mot de passe temporaire
-                    'access' => false, // Pas d'accès direct à l'application
+                    'email' => 'student_' . uniqid() . '@example.com',
+                    'password' => Hash::make(uniqid()),
+                    'access' => false,
                 ]);
 
-                // Ajouter les informations de l'élève
                 $this->updateOrCreateUserInfo($student, self::KEY_BIRTHDATE, $studentData['birthdate']);
 
-                // Stocker le genre si nécessaire
                 $this->updateOrCreateUserInfo($student, 'gender', $studentData['gender']);
 
-                // Ajouter le rôle d'élève à l'utilisateur dans cette famille
                 $family->userRoles()->create([
                     'user_id' => $student->id,
                     'role_id' => $studentRole->id,

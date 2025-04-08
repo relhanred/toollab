@@ -22,14 +22,12 @@ class UserPasswordController extends Controller
 
         $user = Auth::user();
 
-        // Verify current password
         if (!Hash::check($request->current_password, $user->password)) {
             return response()->json([
                 'message' => 'Le mot de passe actuel est incorrect.',
             ], 422);
         }
 
-        // Update password
         $user->password = Hash::make($request->password);
         $user->save();
 

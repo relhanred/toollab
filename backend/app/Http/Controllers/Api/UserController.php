@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Classroom;
 use App\Models\User;
 use App\Models\School;
+use App\Models\UserInfo;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -115,7 +116,6 @@ class UserController extends Controller
         $user::findOrFail($user->id)->delete();
     }
 
-    //Add by me
 
     /**
      * Get all users with their roles in all contexts
@@ -153,10 +153,8 @@ class UserController extends Controller
             'birthdate' => 'nullable|date',
         ]);
 
-        // Liste des clés valides pour les infos utilisateur
         $validKeys = ['phone', 'address', 'zipcode', 'city', 'birthdate'];
 
-        // Mettre à jour les infos utilisateur
         foreach ($validKeys as $key) {
             if ($request->has($key)) {
                 UserInfo::updateOrCreate(
