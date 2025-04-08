@@ -1,11 +1,11 @@
 <script setup>
-import {ref} from 'vue'
+import {ref, watch} from 'vue'
 import InputText from "~/components/form/InputText.vue";
 import SaveButton from "~/components/form/SaveButton.vue";
 import CancelButton from "~/components/form/CancelButton.vue";
 import ToogleButton from "~/components/form/ToogleButton.vue";
 import DatePicker from "~/components/form/DatePicker.vue";
-import apiClient from '~/services/api';
+import familyService from '~/services/family';
 
 defineProps({
   isOpen: {
@@ -49,7 +49,7 @@ const handleSave = async () => {
     };
 
     // Appel API pour créer une famille
-    const response = await apiClient.post('/api/families', payload);
+    const response = await familyService.createFamily(payload);
 
     // Réinitialiser le formulaire
     formData.value = {
@@ -64,14 +64,14 @@ const handleSave = async () => {
     };
 
     // Notifier le composant parent du succès
-    emit('save', response.data.data);
+    emit('save', response.data);
     emit('close');
 
     // Afficher un message de succès
     const { setFlashMessage } = useFlashMessage();
     setFlashMessage({
       type: 'success',
-      message: response.data.message || 'Famille créée avec succès'
+      message: response.message || 'Famille créée avec succès'
     });
 
   } catch (err) {

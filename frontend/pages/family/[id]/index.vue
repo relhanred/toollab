@@ -12,7 +12,8 @@ import PlusLight from "~/components/Icons/PlusLight.vue"
 import AddResponsableModal from "~/components/modals/AddResponsableModal.vue";
 import SaveButton from "~/components/form/SaveButton.vue";
 import AddElevesModal from "~/components/modals/AddElevesModal.vue";
-import apiClient from '~/services/api';
+import familyService from '~/services/family';
+import userService from '~/services/user';
 
 const route = useRoute();
 const loading = ref(true);
@@ -41,8 +42,8 @@ const fetchFamilyDetails = async () => {
     loading.value = true;
     error.value = null;
 
-    const response = await apiClient.get(`/api/families/${route.params.id}`);
-    family.value = response.data.data.family;
+    const response = await familyService.getFamily(route.params.id);
+    family.value = response.data.family;
 
     if (family.value.responsibles && family.value.responsibles.length > 0) {
       selectedResponsible.value = family.value.responsibles[0];
@@ -100,7 +101,7 @@ const handleSave = async () => {
       }
     }
 
-    await apiClient.put(`/api/users/${selectedResponsible.value.id}/info`, {
+    await userService.updateUserInfo(selectedResponsible.value.id, {
       phone: editForm.value.phone,
       address: address,
       zipcode: zipcode,
@@ -137,11 +138,8 @@ const handleSave = async () => {
 const handleCommentSubmit = async () => {
   if (newComment.value.trim()) {
     try {
-      const response = await apiClient.post(`/api/families/${route.params.id}/comments`, {
-        content: newComment.value.trim()
-      });
-
-      comments.value.unshift(response.data.data.comment);
+      const response = await familyService.addComment(route.params.id, newComment.value.trim());
+      comments.value.unshift(response.data.comment);
       newComment.value = '';
       scrollToBottom();
 
@@ -153,10 +151,7 @@ const handleCommentSubmit = async () => {
 
 const handleAddStudents = async (newStudents) => {
   try {
-    const response = await apiClient.post(`/api/families/${route.params.id}/students`, {
-      students: newStudents
-    });
-
+    const response = await familyService.addStudents(route.params.id, newStudents);
     fetchFamilyDetails();
 
     const { setFlashMessage } = useFlashMessage();
@@ -178,10 +173,7 @@ const handleAddStudents = async (newStudents) => {
 const handleAddResponsable = async (newResponsable) => {
   try {
     if (newResponsable && newResponsable.user) {
-      const response = await apiClient.post(`/api/families/${route.params.id}/responsibles`, {
-        user_id: newResponsable.user.id
-      });
-
+      const response = await familyService.addResponsible(route.params.id, newResponsable.user.id);
       fetchFamilyDetails();
 
       const { setFlashMessage } = useFlashMessage();

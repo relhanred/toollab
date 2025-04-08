@@ -3,9 +3,11 @@ import {ref, onMounted, computed} from 'vue'
 import {useAuth} from '~/composables/useAuth'
 import InputText from "~/components/form/InputText.vue"
 import SaveButton from "~/components/form/SaveButton.vue"
-import apiClient from '~/services/api'
 import {usePageTitle} from "~/composables/usePageTitle.js"
 import UserList from "~/components/settings/UserList.vue"
+import userService from '~/services/user'
+import schoolService from '~/services/school'
+import staffService from '~/services/staff'
 
 definePageMeta({
   layout: 'auth',
@@ -62,9 +64,8 @@ const roles = [
 
 const checkUserRoles = async () => {
   try {
-
-    const response = await apiClient.get(`/api/users/${user.value.id}/roles`);
-    const userRoles = response.data.roles;
+    const response = await userService.getUserRoles(user.value.id);
+    const userRoles = response.roles;
 
     if (userRoles.schools && userRoles.schools.length) {
       const directorRole = userRoles.schools.find(role =>
@@ -77,16 +78,15 @@ const checkUserRoles = async () => {
           role.role.toLowerCase() === 'administrateur'
       );
 
-
       if (directorRole) {
         isDirector.value = true;
-        const schoolResponse = await apiClient.get(`/api/schools/${directorRole.context.id}`);
-        school.value = schoolResponse.data;
+        const schoolResponse = await schoolService.getSchool(directorRole.context.id);
+        school.value = schoolResponse;
         populateSchoolForm();
       } else if (adminRole) {
         isAdmin.value = true;
-        const schoolResponse = await apiClient.get(`/api/schools/${adminRole.context.id}`);
-        school.value = schoolResponse.data;
+        const schoolResponse = await schoolService.getSchool(adminRole.context.id);
+        school.value = schoolResponse;
       }
     }
   } catch (error) {
@@ -126,11 +126,11 @@ const handleUpdateUser = async () => {
   try {
     message.value = {type: '', text: ''}
 
-    const response = await apiClient.put(`/api/users/${user.value.id}`, {
+    const response = await userService.updateUser(user.value.id, {
       first_name: userForm.value.first_name,
       last_name: userForm.value.last_name,
       email: user.value.email
-    })
+    });
 
     const userData = JSON.parse(localStorage.getItem('auth.user'))
     userData.first_name = userForm.value.first_name
@@ -162,11 +162,11 @@ const handleUpdatePassword = async () => {
       return
     }
 
-    await apiClient.post(`/api/users/change-password`, {
+    await userService.changePassword({
       current_password: passwordForm.value.current_password,
       password: passwordForm.value.password,
       password_confirmation: passwordForm.value.password_confirmation
-    })
+    });
 
     setFlashMessage({
       type: 'success',
@@ -192,28 +192,18 @@ const handleUpdateSchool = async () => {
   try {
     message.value = {type: '', text: ''}
 
-    const formData = new FormData()
-
-    formData.append('_method', 'PUT')
-
-    Object.keys(schoolForm.value).forEach(key => {
-      formData.append(key, schoolForm.value[key] || '')
-    })
+    const schoolData = {...schoolForm.value};
 
     if (logoFile.value) {
-      formData.append('logo', logoFile.value)
+      schoolData.logo = logoFile.value;
     }
 
-    const response = await apiClient.post(`/api/schools/${school.value.id}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
+    const response = await schoolService.updateSchool(school.value.id, schoolData);
 
-    school.value = response.data
+    school.value = response;
 
-    if (response.data.logo) {
-      logoPreview.value = `${useRuntimeConfig().public.apiUrl}/storage/${response.data.logo}`
+    if (response.logo) {
+      logoPreview.value = `${useRuntimeConfig().public.apiUrl}/storage/${response.logo}`
     }
 
     setFlashMessage({
@@ -241,13 +231,13 @@ const handleCreateUser = async () => {
       return
     }
 
-    const response = await apiClient.post('/api/users/create-staff', {
+    const response = await staffService.createStaffUser({
       first_name: newUserForm.value.first_name,
       last_name: newUserForm.value.last_name,
       email: newUserForm.value.email,
       role: newUserForm.value.role,
       school_id: school.value.id
-    })
+    });
 
     setFlashMessage({
       type: 'success',

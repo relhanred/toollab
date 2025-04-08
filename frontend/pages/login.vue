@@ -5,6 +5,7 @@ import InputText from "~/components/form/InputText.vue"
 import { ref } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useRouter, useRoute } from '#imports'
+import authService from '~/services/auth'
 
 definePageMeta({
   layout: 'default',
@@ -39,7 +40,7 @@ const handleSubmit = async () => {
       return
     }
 
-    await login({
+    await authService.login({
       email: form.value.email,
       password: form.value.password,
       remember: form.value.remember

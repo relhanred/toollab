@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, defineProps, defineEmits } from 'vue'
-import apiClient from '~/services/api.js'
+import staffService from '~/services/staff'
 import Trash from "~/components/Icons/Trash.vue"
 
 const props = defineProps({
@@ -31,10 +31,10 @@ const roleLabels = {
 const fetchUsers = async () => {
   try {
     isLoading.value = true
-    const response = await apiClient.get(`/api/users/school/${props.schoolId}`)
+    const response = await staffService.getSchoolUsers(props.schoolId)
 
     // Filtrer les rôles concernés avec les slugs
-    const filteredData = response.data.filter(item =>
+    const filteredData = response.filter(item =>
         ['director', 'admin', 'registar'].includes(item.role)
     )
 
@@ -78,7 +78,7 @@ const removeRole = async () => {
   if (!selectedUserForRemoval.value) return;
 
   try {
-    await apiClient.post('/api/users/remove-role', {
+    await staffService.removeUserRole({
       user_id: selectedUserForRemoval.value.userId,
       school_id: props.schoolId,
       role_name: selectedUserForRemoval.value.roleName
