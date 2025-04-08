@@ -26,7 +26,6 @@ const pagination = ref({
   total: 0
 });
 
-// Définition des colonnes du tableau
 const columns = [
   { key: 'nom', label: 'Nom du responsable', width: '5' },
   { key: 'nombreEleves', label: 'Nombre d\'élèves', width: '2' },
@@ -34,7 +33,6 @@ const columns = [
   { key: 'dateInscription', label: 'Date d\'inscription', width: '3' }
 ];
 
-// Récupération des familles
 const fetchFamilies = async (page = 1) => {
   try {
     isLoading.value = true;
@@ -46,11 +44,8 @@ const fetchFamilies = async (page = 1) => {
     });
 
     if (response.status === 'success') {
-      // Si besoin, on peut reformater la date côté frontend
       families.value = response.data.items.map(item => ({
         ...item,
-        // On garde la date originale si on veut l'afficher telle qu'elle est envoyée par le backend
-        // Mais on ajoute aussi une version formatée si on veut plus de contrôle
         dateInscriptionFormatee: formatDateFr(item.dateInscription, {
           day: '2-digit',
           month: 'long',
@@ -60,7 +55,6 @@ const fetchFamilies = async (page = 1) => {
         })
       }));
 
-      // Mise à jour des informations de pagination
       pagination.value = {
         currentPage: response.data.pagination.current_page,
         totalPages: response.data.pagination.total_pages,
@@ -78,7 +72,6 @@ const fetchFamilies = async (page = 1) => {
   }
 };
 
-// Gestion du changement de page
 const handlePageChange = (page) => {
   fetchFamilies(page);
 };
@@ -88,7 +81,6 @@ const handleAddResponsable = async (newResponsable) => {
     if (newResponsable && newResponsable.family_id) {
       navigateTo(`/family/${newResponsable.family_id}`);
     } else {
-      // Rafraîchir la liste en cas de création sans redirection
       await fetchFamilies(pagination.value.currentPage);
     }
   } catch (error) {
@@ -97,13 +89,12 @@ const handleAddResponsable = async (newResponsable) => {
 };
 
 onMounted(() => {
-  // Charger les données au montage du composant
   fetchFamilies();
 });
 </script>
 
 <template>
-  <div class="flex flex-col gap-y-6 w-full pt-10 px-10 font-montserrat">
+  <div class="flex flex-col gap-y-6 w-full xl:pt-10 pt-4 xl:px-10 px-6 font-montserrat">
     <AddResponsableModal
         :is-open="showAddResponsableModal"
         @close="showAddResponsableModal = false"
@@ -117,12 +108,10 @@ onMounted(() => {
       <span>Créer une famille</span>
     </button>
 
-    <!-- Message d'erreur -->
     <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
       {{ error }}
     </div>
 
-    <!-- Tableau des familles -->
     <DataTable
         :columns="columns"
         :items="families"
@@ -133,7 +122,7 @@ onMounted(() => {
       <template #default="{ item, isLastRow }">
         <NuxtLink
             :to="`/family/${item.id}`"
-            class="grid py-4 px-10 hover:bg-gray-50 transition-colors cursor-pointer"
+            class="grid py-1.5 px-4 hover:bg-gray-50 transition-colors cursor-pointer"
             :class="{ 'border-b border-[#E6EFF5]': !isLastRow }"
             :style="`grid-template-columns: repeat(12, minmax(0, 1fr))`"
         >
