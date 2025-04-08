@@ -14,6 +14,8 @@ import SaveButton from "~/components/form/SaveButton.vue";
 import AddElevesModal from "~/components/modals/AddElevesModal.vue";
 import familyService from '~/services/family';
 import userService from '~/services/user';
+import { formatDateTimeFr } from '~/utils/dateFormatter';
+
 
 const route = useRoute();
 const loading = ref(true);
@@ -28,9 +30,9 @@ const contactInfo = ref({
   name: '',
   phone: '',
   email: '',
-  street: '',  // Champ "voie"
-  zipcode: '',  // Champ "code postal"
-  city: ''      // Champ "ville"
+  street: '',
+  zipcode: '',
+  city: ''
 });
 
 const editForm = ref({...contactInfo.value});
@@ -38,7 +40,6 @@ const comments = ref([]);
 const newComment = ref('');
 const commentsContainer = ref(null);
 
-// Récupérer les détails de la famille
 const fetchFamilyDetails = async () => {
   try {
     loading.value = true;
@@ -187,17 +188,6 @@ const scrollToBottom = () => {
     if (commentsContainer.value) {
       commentsContainer.value.scrollTop = commentsContainer.value.scrollHeight;
     }
-  });
-};
-
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
   });
 };
 
@@ -380,13 +370,13 @@ definePageMeta({
                 <ResponsableTLB v-if="student.is_responsible" />
                 <component :is="student.gender === 'F' ? UserFemaleTLB : UserMaleTLB" />
               </div>
-              <span>{{ student.first_name }} {{ student.last_name }}</span>
+              <span>{{ student.first_name }} {{ student.last_name }} </span>
             </div>
             <div class="col-span-2 inline-flex items-center justify-start">
               {{ student.classroom ? student.classroom.name : '-' }}
             </div>
             <div class="col-span-3 inline-flex items-center justify-start">
-              {{ formatDate(student.created_at) }}
+              {{ formatDateTimeFr(student.created_at) }}
             </div>
           </div>
         </template>

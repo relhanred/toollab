@@ -213,7 +213,8 @@ class FamilyController extends Controller
                     'birthdate' => $userInfos[self::KEY_BIRTHDATE] ?? null,
                     'is_responsible' => $this->isUserResponsible($user->id, $userRole->roleable_id),
                     'role' => $userRole->role->name,
-                    'classroom' => $this->getUserClassroom($user->id)
+                    'classroom' => $this->getUserClassroom($user->id),
+                    'created_at' => $userRole->created_at
                 ];
             });
 
