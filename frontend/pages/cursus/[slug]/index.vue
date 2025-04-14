@@ -4,6 +4,7 @@ import BreadCrumb from "~/components/navigation/BreadCrumb.vue";
 import PlusLight from "~/components/Icons/PlusLight.vue";
 import DataTable from "~/components/table/DataTable.vue";
 import AddClassModal from "~/components/modals/AddClassModal.vue";
+import PageContainer from "~/components/layout/PageContainer.vue";
 import { useRoute } from '#imports';
 
 const route = useRoute();
@@ -134,7 +135,7 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="flex flex-col gap-y-6 w-full xl:pt-10 pt-4 xl:px-10 px-6 font-montserrat">
+  <PageContainer>
     <BreadCrumb/>
 
     <button
@@ -202,5 +203,5 @@ definePageMeta({
         </template>
       </DataTable>
     </div>
-  </div>
+  </PageContainer>
 </template>

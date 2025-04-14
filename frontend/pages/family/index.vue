@@ -7,6 +7,7 @@ import Tag from "~/components/Tag.vue";
 import familyService from "~/services/family.js";
 import { formatDateFr } from "~/utils/dateFormatter.js";
 import DataTable from "~/components/table/DataTable.vue";
+import PageContainer from "~/components/layout/PageContainer.vue";
 
 definePageMeta({
   layout: 'auth',
@@ -94,7 +95,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-y-6 w-full xl:pt-10 pt-4 xl:px-10 px-6 font-montserrat">
+  <PageContainer>
     <AddResponsableModal
         :is-open="showAddResponsableModal"
         @close="showAddResponsableModal = false"
@@ -142,5 +143,5 @@ onMounted(() => {
         </NuxtLink>
       </template>
     </DataTable>
-  </div>
+  </PageContainer>
 </template>

@@ -49,7 +49,7 @@ watch(() => modelValue.value, (newVal) => {
         :min="min"
         :max="max"
         :required="required"
-        class="w-full px-3 py-3 border border-input-stroke placeholder:text-placeholder rounded-lg transition-colors duration-200 focus:ring-0 focus:outline-none focus:border-default disabled:bg-gray-100 disabled:cursor-not-allowed"
+        class="w-full px-3 py-3 border border-input-stroke placeholder:text-placeholder rounded-lg transition-colors duration-200 focus:ring-0 focus:outline-none focus:border-default disabled:bg-gray-100 disabled:cursor-not-allowed no-spinners"
         :class="[error ? 'border-red-500' : '']"
     />
 
@@ -67,3 +67,16 @@ watch(() => modelValue.value, (newVal) => {
     </p>
   </div>
 </template>
+
+<style scoped>
+input[type=number].no-spinners::-webkit-inner-spin-button,
+input[type=number].no-spinners::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number].no-spinners {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+</style>

@@ -3,6 +3,7 @@ import { ref, onMounted } from "vue"
 import PlusLight from "~/components/Icons/PlusLight.vue"
 import DataTable from "~/components/table/DataTable.vue"
 import AddCursusModal from "~/components/modals/AddCursusModal.vue"
+import PageContainer from "~/components/layout/PageContainer.vue";
 
 definePageMeta({
   layout: 'auth',
@@ -85,7 +86,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-y-6 w-full xl:pt-10 pt-4 xl:px-10 px-6 font-montserrat">
+  <PageContainer>
     <AddCursusModal
         :is-open="showAddCursusModal"
         @close="showAddCursusModal = false"
@@ -132,5 +133,5 @@ onMounted(() => {
         </NuxtLink>
       </template>
     </DataTable>
-  </div>
+  </PageContainer>
 </template>
