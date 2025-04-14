@@ -1,11 +1,11 @@
 <script setup>
 import { ref } from 'vue'
 import InputText from "~/components/form/InputText.vue"
-import InputCross from "~/components/form/InputCross.vue"
 import SaveButton from "~/components/form/SaveButton.vue"
 import CancelButton from "~/components/form/CancelButton.vue"
 import PlusLight from "~/components/Icons/PlusLight.vue"
 import Cross from "~/components/Icons/Cross.vue"
+import Trash from "~/components/Icons/Trash.vue"
 import ToogleCursus from "~/components/form/ToogleCursus.vue"
 
 defineProps({
@@ -33,10 +33,6 @@ const deleteLevel = (index) => {
   if (index > 0) {
     currentCursus.value.levels.splice(index, 1)
   }
-}
-
-const updateLevel = (index, value) => {
-  currentCursus.value.levels[index] = value
 }
 
 const handleSave = () => {
@@ -84,7 +80,7 @@ const handleSave = () => {
 
 <template>
   <div v-if="isOpen" class="fixed inset-0 font-nunito bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl px-10 pt-6 pb-10 w-[50rem] max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-2xl px-8 pt-6 pb-10 w-[50rem] max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-bold mx-auto">Ajouter un cursus</h2>
         <button
@@ -102,41 +98,46 @@ const handleSave = () => {
       </div>
 
       <div class="mt-8">
-        <div class="grid grid-cols-1 gap-6 mb-8">
-          <InputText
-              v-model="currentCursus.name"
-              placeholder="Nom du cursus"
-              required
-          />
+        <div class="grid grid-cols-2 gap-6 mb-8">
+          <div class="flex flex-col gap-y-2">
+            <div class="text-lg font-bold text-default mb-2 pl-2">Nom du cursus</div>
+            <InputText
+                v-model="currentCursus.name"
+                placeholder="Nom du cursus"
+                required
+            />
+          </div>
+          <div class="flex flex-col justify-between">
+            <div class="text-lg font-bold text-default mb-2 pl-2">Type de cursus</div>
+            <ToogleCursus v-model="currentCursus.progression" />
+          </div>
         </div>
 
-        <div class="flex flex-col gap-y-4 mb-8">
-          <div class="text-lg font-bold text-default">Type de progression</div>
-          <ToogleCursus v-model="currentCursus.progression" />
-        </div>
-
-        <div class="flex flex-col gap-y-4">
-          <div class="text-lg font-bold text-default">Niveaux</div>
+        <div class="flex flex-col gap-y-4 mt-10">
+          <div class="text-lg font-bold text-default mb-2 pl-2">Niveaux</div>
 
           <div v-for="(level, index) in currentCursus.levels" :key="index" class="flex items-center gap-x-2">
             <div class="flex-1">
-              <InputText
-                  v-if="index === 0"
-                  v-model="currentCursus.levels[index]"
-                  :placeholder="`Nom du niveau ${index + 1}`"
-              />
-              <InputCross
-                  v-else
-                  v-model="currentCursus.levels[index]"
-                  :placeholder="`Nom du niveau ${index + 1}`"
-                  @delete="deleteLevel(index)"
-              />
+              <div class="relative flex items-center">
+                <InputText
+                    v-model="currentCursus.levels[index]"
+                    :placeholder="`Nom du niveau ${index + 1}`"
+                />
+                <button
+                    v-if="index > 0"
+                    @click="deleteLevel(index)"
+                    class="absolute right-3 text-gray-500 hover:text-red-500 transition-colors"
+                    type="button"
+                >
+                  <Trash class="size-5" />
+                </button>
+              </div>
             </div>
           </div>
 
           <button
               @click="addLevel"
-              class="bg-white text-default border border-gray-300 mt-2 flex items-center justify-center gap-x-2 py-2 px-4 rounded-md hover:bg-gray-50 w-fit mx-auto"
+              class="bg-white text-default border border-gray-300 mt-3 flex items-center justify-center gap-x-2 py-2 px-4 rounded-md hover:bg-gray-50 w-fit mx-auto"
           >
             <PlusLight class="size-5"/>
             <span>Ajouter un niveau</span>
