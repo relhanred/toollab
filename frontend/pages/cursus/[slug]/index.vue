@@ -1,110 +1,130 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import BreadCrumb from "~/components/navigation/BreadCrumb.vue";
-import SelectGenre from "~/components/form/SelectGenre.vue";
-import SaveButton from "~/components/form/SaveButton.vue";
-import CancelButton from "~/components/form/CancelButton.vue";
+import PlusLight from "~/components/Icons/PlusLight.vue";
+import DataTable from "~/components/table/DataTable.vue";
+import AddClassModal from "~/components/modals/AddClassModal.vue";
 import { useRoute } from '#imports';
 
 const route = useRoute();
 const isLoading = ref(true);
 const error = ref(null);
+const showAddClassModal = ref(false);
 
 const cursus = ref({
+  id: 1,
   name: route.params.slug ? route.params.slug.charAt(0).toUpperCase() + route.params.slug.slice(1) : '',
   levels: [
-    { id: 1, name: '1ère année', classes: [] },
-    { id: 2, name: '2ème année', classes: [] },
-    { id: 3, name: '3ème année', classes: [] }
+    { id: 1, name: '1ère année' },
+    { id: 2, name: '2ème année' },
+    { id: 3, name: '3ème année' }
   ],
   progression: 'levels'
 });
 
-const classes = ref([
+const allClasses = ref([
   {
     id: 1,
     name: '1A',
     levelId: 1,
-    gender: 'hommes',
+    level: '1ère année',
+    gender: 'Hommes',
     color: '#93C5FD',
-    size: 30
+    size: 30,
+    studentCount: 25
   },
   {
     id: 2,
     name: '1B',
     levelId: 1,
-    gender: 'femmes',
+    level: '1ère année',
+    gender: 'Femmes',
     color: '#FDA4AF',
-    size: 25
+    size: 25,
+    studentCount: 18
   },
   {
     id: 3,
     name: '2A',
     levelId: 2,
-    gender: 'enfants',
+    level: '2ème année',
+    gender: 'Enfants',
     color: '#FCD34D',
-    size: 20
+    size: 20,
+    studentCount: 15
+  },
+  {
+    id: 4,
+    name: '3A',
+    levelId: 3,
+    level: '3ème année',
+    gender: 'Hommes',
+    color: '#93C5FD',
+    size: 22,
+    studentCount: 20
   }
 ]);
 
-const newClass = ref({
-  name: '',
-  gender: '',
-  size: ''
+const genderColors = {
+  'Hommes': '#93C5FD',
+  'Femmes': '#FDA4AF',
+  'Enfants': '#FCD34D',
+  'Mixte': '#86EFAC'
+};
+
+const pagination = ref({
+  currentPage: 1,
+  totalPages: 1,
+  perPage: 10,
+  total: 0
 });
 
-const genderColors = {
-  'hommes': '#93C5FD',
-  'femmes': '#FDA4AF',
-  'enfants': '#FCD34D',
-  'mixte': '#86EFAC'
+const columns = [
+  { key: 'name', label: 'Nom de la classe', width: '3' },
+  { key: 'level', label: 'Niveau', width: '3' },
+  { key: 'gender', label: 'Genre', width: '2' },
+  { key: 'size', label: 'Capacité', width: '2' },
+  { key: 'studentCount', label: 'Élèves inscrits', width: '2' },
+];
+
+const handlePageChange = (page) => {
+  pagination.value.currentPage = page;
+};
+
+const handleAddClass = (newClass) => {
+  const selectedLevel = cursus.value.levels.find(l => l.id === newClass.levelId);
+
+  const newClassObj = {
+    id: Math.max(...allClasses.value.map(c => c.id)) + 1,
+    name: newClass.name,
+    levelId: newClass.levelId,
+    level: selectedLevel ? selectedLevel.name : '',
+    gender: newClass.gender.charAt(0).toUpperCase() + newClass.gender.slice(1),
+    color: genderColors[newClass.gender.charAt(0).toUpperCase() + newClass.gender.slice(1)] || '#86EFAC',
+    size: newClass.size,
+    studentCount: 0
+  };
+
+  allClasses.value.push(newClassObj);
+  pagination.value.total = allClasses.value.length;
+
+  // Notification de succès
+  const { setFlashMessage } = useFlashMessage();
+  setFlashMessage({
+    type: 'success',
+    message: `La classe ${newClass.name} a été ajoutée avec succès`
+  });
 };
 
 onMounted(() => {
+  isLoading.value = true;
+
+  // Simulation d'un chargement de données
   setTimeout(() => {
-    cursus.value.levels.forEach(level => {
-      level.classes = classes.value.filter(c => c.levelId === level.id);
-    });
+    pagination.value.total = allClasses.value.length;
     isLoading.value = false;
   }, 500);
 });
-
-const handleSaveClass = () => {
-  if (!newClass.value.name || !newClass.value.gender || !newClass.value.size) {
-    error.value = 'Tous les champs sont requis';
-    return;
-  }
-
-  const newId = Math.max(...classes.value.map(c => c.id)) + 1;
-  const newClassObj = {
-    id: newId,
-    name: newClass.value.name,
-    levelId: 1,
-    gender: newClass.value.gender,
-    color: genderColors[newClass.value.gender] || '#86EFAC',
-    size: parseInt(newClass.value.size)
-  };
-
-  classes.value.push(newClassObj);
-  cursus.value.levels[0].classes.push(newClassObj);
-
-  newClass.value = {
-    name: '',
-    gender: '',
-    size: ''
-  };
-
-  error.value = null;
-};
-
-const handleCancel = () => {
-  newClass.value = {
-    name: '',
-    gender: '',
-    size: ''
-  };
-  error.value = null;
-};
 
 definePageMeta({
   layout: 'auth',
@@ -118,6 +138,25 @@ definePageMeta({
   <div class="container mx-auto px-10 pt-3">
     <BreadCrumb/>
 
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">Cursus {{ cursus.name }}</h1>
+
+      <button
+          @click="showAddClassModal = true"
+          class="bg-default text-white px-5 py-2 rounded-lg hover:opacity-90 inline-flex items-center justify-between gap-x-2">
+        <PlusLight class="size-4"/>
+        <span>Ajouter une classe</span>
+      </button>
+    </div>
+
+    <AddClassModal
+        :is-open="showAddClassModal"
+        :cursus-name="cursus.name"
+        :levels="cursus.levels"
+        @close="showAddClassModal = false"
+        @save="handleAddClass"
+    />
+
     <div v-if="isLoading" class="flex justify-center py-10">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-default"></div>
     </div>
@@ -126,51 +165,47 @@ definePageMeta({
       {{ error }}
     </div>
 
-    <div v-else class="flex flex-col gap-y-6">
-      <div v-for="level in cursus.levels" :key="level.id" class="flex flex-col gap-y-4">
-        <div class="w-full border rounded-xl bg-[#d9d9D9] my-2"></div>
-        <div class="text-default font-bold text-2xl font-montserrat text-center">{{ level.name }}</div>
-
-        <div class="grid grid-cols-6 gap-4 py-4">
-          <div v-if="level.classes.length === 0" class="col-span-6 text-center text-gray-500 py-4">
-            Aucune classe pour ce niveau
+    <div v-else>
+      <DataTable
+          :columns="columns"
+          :items="allClasses"
+          :pagination="pagination"
+          :loading="isLoading"
+          @page-change="handlePageChange"
+      >
+        <template #default="{ item, isLastRow }">
+          <div
+              class="grid py-3 px-4 hover:bg-gray-50 transition-colors cursor-pointer"
+              :class="{ 'border-b border-[#E6EFF5]': !isLastRow }"
+              :style="`grid-template-columns: repeat(12, minmax(0, 1fr))`"
+          >
+            <div class="col-span-3 inline-flex items-center">
+              <div class="size-4 rounded-full mr-3" :style="`background-color: ${item.color}`"></div>
+              <span class="font-medium">{{ item.name }}</span>
+            </div>
+            <div class="col-span-3 inline-flex items-center">
+              {{ item.level }}
+            </div>
+            <div class="col-span-2 inline-flex items-center">
+              {{ item.gender }}
+            </div>
+            <div class="col-span-2 inline-flex items-center">
+              {{ item.size }} places
+            </div>
+            <div class="col-span-2 inline-flex items-center">
+              <div class="relative w-full h-5 bg-gray-200 rounded-full">
+                <div
+                    class="absolute top-0 left-0 h-full rounded-full"
+                    :style="`width: ${Math.min(100, (item.studentCount / item.size) * 100)}%; background-color: ${item.color}`"
+                ></div>
+                <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center text-xs font-semibold">
+                  {{ item.studentCount }}/{{ item.size }}
+                </div>
+              </div>
+            </div>
           </div>
-
-          <div v-for="classe in level.classes" :key="classe.id"
-               class="bg-white rounded-3xl border-t-4 border-x border-b shadow-md p-5 flex flex-col justify-center items-center font-montserrat"
-               :class="`border-t-[${classe.color}]`">
-            <h2 :class="`text-[${classe.color}] text-2xl font-bold`">{{ classe.name }}</h2>
-            <p :class="`text-[${classe.color}] font-medium text-xs`">{{ classe.size }} places</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="w-full border rounded-xl bg-[#d9d9D9] my-2"></div>
-      <div class="text-default font-bold text-2xl font-montserrat text-center mb-4">Nouvelle classe</div>
-
-      <div class="grid grid-cols-3 gap-x-10 p-6 bg-white rounded-lg shadow">
-        <input type="text"
-               v-model="newClass.name"
-               class="bg-white placeholder:text-placeholder border rounded-lg focus:outline-default border-placeholder font-nunito placeholder:font-semibold placeholder:text-lg py-3 pl-4 text-default"
-               placeholder="Nom de la classe"/>
-        <SelectGenre
-            v-model="newClass.gender"
-            placeholder="Genre"
-        />
-        <input type="number"
-               v-model="newClass.size"
-               class="bg-white placeholder:text-placeholder border rounded-lg focus:outline-default border-placeholder font-nunito placeholder:font-semibold placeholder:text-lg py-3 pl-4 text-default"
-               placeholder="Effectif maximum"/>
-      </div>
-
-      <div class="flex items-center justify-center mt-6 mb-10">
-        <SaveButton @click="handleSaveClass" class="mr-8">
-          Enregistrer
-        </SaveButton>
-        <CancelButton @click="handleCancel">
-          Annuler
-        </CancelButton>
-      </div>
+        </template>
+      </DataTable>
     </div>
   </div>
 </template>

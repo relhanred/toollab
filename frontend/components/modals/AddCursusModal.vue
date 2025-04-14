@@ -66,7 +66,6 @@ const handleSave = () => {
       progression: 'levels'
     }
 
-    // Fermer la modale
     emit('close')
 
   } catch (err) {
