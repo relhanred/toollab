@@ -5,8 +5,10 @@ import SaveButton from "~/components/form/SaveButton.vue"
 import CancelButton from "~/components/form/CancelButton.vue"
 import Cross from "~/components/Icons/Cross.vue"
 import InputText from "~/components/form/InputText.vue"
+import InputSelect from "~/components/form/InputSelect.vue"
+import InputNumber from "~/components/form/InputNumber.vue"
 
-defineProps({
+const props = defineProps({
   isOpen: {
     type: Boolean,
     required: true
@@ -34,6 +36,14 @@ const newClass = ref({
   gender: '',
   size: '',
   levelId: 1
+})
+
+// Formater les niveaux pour le composant InputSelect
+const levelOptions = computed(() => {
+  return props.levels.map(level => ({
+    value: level.id,
+    label: level.name
+  }))
 })
 
 const handleSave = () => {
@@ -74,7 +84,7 @@ const handleSave = () => {
 
 <template>
   <div v-if="isOpen" class="fixed inset-0 font-nunito bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl px-8 pt-6 pb-10 w-[60rem] max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-2xl px-8 pt-8 pb-10 w-[60rem] max-h-[95vh] h-[28rem] overflow-y-auto">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-bold mx-auto">Ajouter une classe</h2>
         <button
@@ -91,58 +101,45 @@ const handleSave = () => {
         {{ error }}
       </div>
 
-      <div class="mt-8">
-        <div class="grid grid-cols-2 gap-6 mb-4">
-          <div class="flex flex-col gap-y-2">
-            <div class="text-lg font-bold text-default mb-2 pl-2">Nom de la classe</div>
+      <div class="mt-10">
+        <div class="grid grid-cols-2 gap-10 mb-10">
+          <div>
             <InputText
                 v-model="newClass.name"
                 placeholder="Nom de la classe"
             />
           </div>
 
-          <div class="flex flex-col gap-y-2">
-            <div class="text-lg font-bold text-default mb-2 pl-2">Niveau</div>
-            <div class="relative">
-              <select
-                  v-model="newClass.levelId"
-                  class="w-full bg-white placeholder:text-placeholder border rounded-lg focus:outline-default border-placeholder font-nunito placeholder:font-semibold placeholder:text-lg py-3 pl-4 text-default appearance-none pr-10"
-              >
-                <option v-for="level in levels" :key="level.id" :value="level.id">
-                  {{ level.name }}
-                </option>
-              </select>
-              <div class="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                <svg class="size-5 text-placeholder" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-              </div>
-            </div>
+          <div>
+            <InputSelect
+                v-model="newClass.levelId"
+                :options="levelOptions"
+                placeholder="Niveau"
+            />
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-6 mb-4">
-          <div class="flex flex-col gap-y-2">
-            <div class="text-lg font-bold text-default mb-2 pl-2">Genre</div>
+        <div class="grid grid-cols-2 gap-10 mb-4">
+          <!-- Genre -->
+          <div>
             <SelectGenre
                 v-model="newClass.gender"
                 placeholder="Genre"
             />
           </div>
 
-          <div class="flex flex-col gap-y-2">
-            <div class="text-lg font-bold text-default mb-2 pl-2">Effectif maximum</div>
-            <input
-                type="number"
+          <div>
+            <InputNumber
                 v-model="newClass.size"
-                class="w-full bg-white placeholder:text-placeholder border rounded-lg focus:outline-default border-placeholder font-nunito placeholder:font-semibold placeholder:text-lg py-3 pl-4 text-default"
                 placeholder="Effectif maximum"
+                :min="1"
+                :max="100"
             />
           </div>
         </div>
       </div>
 
-      <div class="flex justify-center gap-x-3 mt-10">
+      <div class="flex justify-center gap-x-3 mt-24">
         <CancelButton @click="$emit('close')" :disabled="isSubmitting">Annuler</CancelButton>
         <SaveButton @click="handleSave" :disabled="isSubmitting">
           {{ isSubmitting ? 'Création en cours...' : 'Enregistrer' }}

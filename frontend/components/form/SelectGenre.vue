@@ -1,6 +1,6 @@
 //CustomSelect.vue
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, defineModel } from 'vue'
 
 const options = [
   { name: 'Hommes', color: '#93C5FD' },
@@ -9,7 +9,7 @@ const options = [
   { name: 'Mixte', color: '#86EFAC' },
 ]
 
-defineProps({
+const props = defineProps({
   placeholder: {
     type: String,
     default: 'Genre'
@@ -19,14 +19,25 @@ defineProps({
 const model = defineModel()
 const isOpen = ref(false)
 const dropdownRef = ref(null)
+const isFocused = ref(false)
+const isFloating = ref(false)
+
+onMounted(() => {
+  isFloating.value = !!model.value
+  document.addEventListener('click', handleClickOutside)
+})
 
 const toggleDropdown = () => {
   isOpen.value = !isOpen.value
+  isFocused.value = isOpen.value
+  isFloating.value = true
 }
 
 const selectOption = (option) => {
   model.value = option.name
   isOpen.value = false
+  isFocused.value = false
+  isFloating.value = true
 }
 
 const getSelectedColor = () => {
@@ -37,12 +48,10 @@ const getSelectedColor = () => {
 const handleClickOutside = (event) => {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
     isOpen.value = false
+    isFocused.value = false
+    isFloating.value = !!model.value
   }
 }
-
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-})
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
@@ -55,10 +64,11 @@ onBeforeUnmount(() => {
       <input
           type="text"
           :class="[
-      'bg-white placeholder:text-placeholder border rounded-lg focus:outline-default border-placeholder font-nunito placeholder:font-semibold placeholder:text-lg py-3 pr-10 text-default w-full cursor-pointer',
-      model ? 'pl-12' : 'pl-4'
-    ]"
-          :placeholder="placeholder"
+          'bg-white placeholder:text-placeholder border rounded-lg focus:outline-none focus:border-default border-input-stroke font-nunito placeholder:font-semibold placeholder:text-lg py-3 pr-10 text-default w-full cursor-pointer',
+          model ? 'pl-12' : 'pl-4',
+          isFocused ? 'border-default' : 'border-input-stroke'
+        ]"
+          :placeholder="isFloating ? '' : placeholder"
           :value="model"
           @click="toggleDropdown"
           readonly
@@ -72,6 +82,15 @@ onBeforeUnmount(() => {
             :style="{ backgroundColor: getSelectedColor() }"
         />
       </div>
+
+      <span
+          class="absolute text-xs transition-all duration-150 pointer-events-none font-medium"
+          :class="[
+          isFloating ? '-top-2 left-2 bg-white px-1 text-default' : 'top-2 left-2 text-gray-400 opacity-0'
+        ]"
+      >
+        {{ placeholder }}
+      </span>
 
       <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
         <svg
