@@ -1,9 +1,8 @@
 <script setup>
-import ToogleCursus from "~/components/form/ToogleCursus.vue";
-import InputCross from "~/components/form/InputCross.vue";
-import PlusLight from "~/components/Icons/PlusLight.vue";
-import Dots from "~/components/Icons/Dots.vue";
-
+import { ref, onMounted } from "vue"
+import PlusLight from "~/components/Icons/PlusLight.vue"
+import DataTable from "~/components/table/DataTable.vue"
+import AddCursusModal from "~/components/modals/AddCursusModal.vue"
 
 definePageMeta({
   layout: 'auth',
@@ -12,128 +11,126 @@ definePageMeta({
   }
 })
 
-const showCursus = ref(false);
-const createdCursus = ref([
+const showAddCursusModal = ref(false)
+const isLoading = ref(false)
+const error = ref(null)
+
+const cursus = ref([
   {
+    id: 1,
     name: 'Arabe',
-    levels: ['1er', '2eme'],
-    progression: 'levels'
+    levels: ['1er', '2eme', '3eme'],
+    progression: 'levels',
+    classCount: 6,
+    type: 'Par niveaux'
   },
+  {
+    id: 2,
+    name: 'Coran',
+    levels: ['Débutant', 'Intermédiaire', 'Avancé'],
+    progression: 'levels',
+    classCount: 4,
+    type: 'Par niveaux'
+  },
+  {
+    id: 3,
+    name: 'Éducation islamique',
+    levels: ['Niveau unique'],
+    progression: 'continu',
+    classCount: 2,
+    type: 'Continu'
+  }
+])
 
-]);
+const pagination = ref({
+  currentPage: 1,
+  totalPages: 1,
+  perPage: 10,
+  total: cursus.value.length
+})
 
-const currentCursus = ref({
-  name: '',
-  levels: [''],
-  progression: 'levels'
-});
+const columns = [
+  { key: 'name', label: 'Nom du cursus', width: '5' },
+  { key: 'classCount', label: 'Nombre de classes', width: '3' },
+  { key: 'type', label: 'Type de cursus', width: '3' }
+]
 
-const addCursus = () => {
-  showCursus.value = true;
+const handlePageChange = (page) => {
+  pagination.value.currentPage = page
 }
 
-const addLevel = () => {
-  currentCursus.value.levels.push('');
-}
+const handleAddCursus = (newCursus) => {
+  if (newCursus) {
+    const newId = Math.max(...cursus.value.map(c => c.id)) + 1
+    cursus.value.push({
+      id: newId,
+      name: newCursus.name,
+      levels: newCursus.levels,
+      progression: newCursus.progression,
+      classCount: 0,
+      type: newCursus.progression === 'levels' ? 'Par niveaux' : 'Continu'
+    })
 
-const deleteLevel = (index) => {
-  if (index > 0) {
-    currentCursus.value.levels.splice(index, 1);
+    pagination.value.total = cursus.value.length
   }
 }
 
-const updateLevel = (index, value) => {
-  currentCursus.value.levels[index] = value;
-}
+onMounted(() => {
+  isLoading.value = true
 
-const handleSave = () => {
-  if (currentCursus.value.name && currentCursus.value.levels[0]) {
-    const nonEmptyLevels = currentCursus.value.levels.filter(level => level.trim() !== '');
-    if (nonEmptyLevels.length > 0) {
-      createdCursus.value.push({
-        name: currentCursus.value.name,
-        levels: nonEmptyLevels,
-        progression: currentCursus.value.progression
-      });
-      resetForm();
-    }
-  }
-}
-
-const resetForm = () => {
-  currentCursus.value = {
-    name: '',
-    levels: [''],
-    progression: 'levels'
-  };
-  showCursus.value = false;
-}
+  setTimeout(() => {
+    isLoading.value = false
+  }, 500)
+})
 </script>
 
 <template>
-  <div class="flex flex-col mx-10  h-full rounded-md">
-    <div class="relative grid grid-cols-5 gap-x-6 gap-y-2 py-4 mt-12">
-      <NuxtLink v-for="cursus in createdCursus" :key="cursus.id" :to="`/cursus/${cursus.name}`"
-                class="inline-flex flex-col items-start justify-start bg-white text-default  border cursor-pointer hover:opacity-80 font-montserrat font-bold text-2xl  px-4 pt-4 pb-8 rounded-2xl">
-        <Dots class="ml-auto size-5 cursor-pointer transition-colors hover:opacity-80"/>
-        <span>{{ cursus.name }}</span>
-        <span class="text-sm font-normal mt-2">{{
-            cursus.levels.length
-          }} {{ cursus.levels.length === 1 ? 'niveau' : 'niveaux' }}</span>
-      </NuxtLink>
+  <div class="flex flex-col gap-y-6 w-full xl:pt-10 pt-4 xl:px-10 px-6 font-montserrat">
+    <AddCursusModal
+        :is-open="showAddCursusModal"
+        @close="showAddCursusModal = false"
+        @save="handleAddCursus"
+    />
 
+    <button
+        @click="showAddCursusModal = true"
+        class="bg-default text-white px-5 py-2 w-fit rounded-lg hover:opacity-90 inline-flex items-center justify-between gap-x-2 ml-auto">
+      <PlusLight class="size-4"/>
+      <span>Créer un cursus</span>
+    </button>
+
+    <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+      {{ error }}
     </div>
 
-
-    <div class="flex flex-col gap-y-4 mt-6">
-      <div class="w-full border rounded-xl bg-[#d9d9D9]"></div>
-      <div class="mx-auto font-montserrat text-2xl text-default font-bold mb-4">Nouveau Cursus</div>
-      <div class="grid grid-cols-2 gap-x-20">
-        <div class="flex flex-col mt-6 gap-y-6">
-          <input type="text"
-                 class="bg-white placeholder:text-placeholder border rounded-lg focus:outline-primary border-placeholder font-nunito placeholder:font-semibold placeholder:text-lg py-3 pl-4 text-default"
-                 placeholder="Nom du Cursus" v-model="currentCursus.name"/>
-          <template v-for="(level, index) in currentCursus.levels" :key="index">
-            <div v-if="index === 0">
-              <input
-                  v-model="currentCursus.levels[0]"
-                  type="text"
-                  class="bg-white w-full placeholder:text-placeholder border rounded-lg focus:outline-primary border-placeholder font-nunito placeholder:font-semibold placeholder:text-lg py-3 pl-4 text-default"
-                  placeholder="Nom du niveau"
-              />
-            </div>
-            <InputCross
-                v-else
-                v-model="currentCursus.levels[index]"
-                @delete="deleteLevel(index)"
-                @update:modelValue="(value) => updateLevel(index, value)"
-            />
-          </template>
-          <button
-              @click="addLevel"
-              class="bg-white text-default border-[gray-300] border mx-auto size-12 rounded-full inline-flex items-center justify-center"
-          >
-            <PlusLight class="size-5"/>
-          </button>
-        </div>
-        <div class="flex flex-col items-start justify-start">
-          <div class="flex flex-col items-center gap-y-2">
-            <div class="font-nunito font-medium text-sm text-default">Progression</div>
-            <ToogleCursus v-model="currentCursus.progression"/>
+    <DataTable
+        :columns="columns"
+        :items="cursus"
+        :pagination="pagination"
+        :loading="isLoading"
+        @page-change="handlePageChange"
+    >
+      <template #default="{ item, isLastRow }">
+        <NuxtLink
+            :to="`/cursus/${item.name.toLowerCase()}`"
+            class="grid py-1.5 px-4 hover:bg-gray-50 transition-colors cursor-pointer"
+            :class="{ 'border-b border-[#E6EFF5]': !isLastRow }"
+            :style="`grid-template-columns: repeat(11, minmax(0, 1fr))`"
+        >
+          <div class="col-span-5 inline-flex items-center justify-start gap-x-4 pl-1">
+            <span>{{ item.name }}</span>
           </div>
-        </div>
-      </div>
-      <div class="flex items-center justify-center mt-auto">
-        <button @click="handleSave"
-                class="bg-default py-2 px-4 font-nunito font-semibold text-white hover:opacity-80 rounded-lg mr-8 transition-colors active:bg-default/80">
-          Enregistrer
-        </button>
-        <button @click="resetForm"
-                class=" py-2 px-4  font-nunito font-semibold text-default border hover:opacity-70 bg-white border-placeholder rounded-lg">
-          Annuler
-        </button>
-      </div>
-    </div>
+          <div class="col-span-3 inline-flex items-center justify-start">
+            {{ item.classCount }}
+          </div>
+          <div class="col-span-3 inline-flex items-center justify-start">
+            <span class="px-4 py-1 rounded-md text-sm"
+                  :class="item.progression === 'levels' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'">
+              {{ item.type }}
+            </span>
+          </div>
+        </NuxtLink>
+      </template>
+    </DataTable>
   </div>
 </template>
-
