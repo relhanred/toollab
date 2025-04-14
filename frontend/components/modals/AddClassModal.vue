@@ -4,7 +4,7 @@ import SelectGenre from "~/components/form/SelectGenre.vue"
 import SaveButton from "~/components/form/SaveButton.vue"
 import CancelButton from "~/components/form/CancelButton.vue"
 import Cross from "~/components/Icons/Cross.vue"
-import InputCross from "~/components/form/InputCross.vue"
+import InputText from "~/components/form/InputText.vue"
 
 defineProps({
   isOpen: {
@@ -74,9 +74,9 @@ const handleSave = () => {
 
 <template>
   <div v-if="isOpen" class="fixed inset-0 font-nunito bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl px-8 pt-6 pb-10 w-[50rem] max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-2xl px-8 pt-6 pb-10 w-[60rem] max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold mx-auto">Ajouter une classe au cursus {{ cursusName }}</h2>
+        <h2 class="text-2xl font-bold mx-auto">Ajouter une classe</h2>
         <button
             @click="$emit('close')"
             class="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-50"
@@ -95,7 +95,7 @@ const handleSave = () => {
         <div class="grid grid-cols-2 gap-6 mb-4">
           <div class="flex flex-col gap-y-2">
             <div class="text-lg font-bold text-default mb-2 pl-2">Nom de la classe</div>
-            <InputCross
+            <InputText
                 v-model="newClass.name"
                 placeholder="Nom de la classe"
             />

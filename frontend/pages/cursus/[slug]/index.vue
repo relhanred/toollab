@@ -119,7 +119,6 @@ const handleAddClass = (newClass) => {
 onMounted(() => {
   isLoading.value = true;
 
-  // Simulation d'un chargement de données
   setTimeout(() => {
     pagination.value.total = allClasses.value.length;
     isLoading.value = false;
@@ -135,19 +134,15 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="container mx-auto px-10 pt-3">
+  <div class="flex flex-col gap-y-6 w-full xl:pt-10 pt-4 xl:px-10 px-6 font-montserrat">
     <BreadCrumb/>
 
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">Cursus {{ cursus.name }}</h1>
-
-      <button
-          @click="showAddClassModal = true"
-          class="bg-default text-white px-5 py-2 rounded-lg hover:opacity-90 inline-flex items-center justify-between gap-x-2">
-        <PlusLight class="size-4"/>
-        <span>Ajouter une classe</span>
-      </button>
-    </div>
+    <button
+        @click="showAddClassModal = true"
+        class="bg-default text-white px-5 py-2 w-fit rounded-lg hover:opacity-90 inline-flex items-center justify-between gap-x-2 ml-auto">
+      <PlusLight class="size-4"/>
+      <span>Ajouter une classe</span>
+    </button>
 
     <AddClassModal
         :is-open="showAddClassModal"
