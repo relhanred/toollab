@@ -64,7 +64,7 @@ onBeforeUnmount(() => {
       <input
           type="text"
           :class="[
-          'bg-white placeholder:text-placeholder border rounded-lg focus:outline-none focus:border-default border-input-stroke font-nunito placeholder:font-semibold placeholder:text-lg py-3 pr-10 text-default w-full cursor-pointer',
+          'w-full px-3 py-3 border border-input-stroke placeholder:text-placeholder rounded-lg transition-colors duration-200 focus:ring-0 focus:outline-none focus:border-default disabled:bg-gray-100 disabled:cursor-not-allowed cursor-pointer',
           model ? 'pl-12' : 'pl-4',
           isFocused ? 'border-default' : 'border-input-stroke'
         ]"
