@@ -79,13 +79,15 @@ class FamilyController extends Controller
         $request->validate([
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
+            'email' => 'required|email:rfc,dns|max:255',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:255',
             'zipcode' => 'nullable|string|max:20',
             'city' => 'nullable|string|max:255',
             'is_student' => 'boolean',
             'birthdate' => 'nullable|date|required_if:is_student,true'
+        ], [
+            'email.email' => 'L\'adresse e-mail saisie n\'est pas valide.',
         ]);
 
         $user = User::where('email', $request->email)->first();
