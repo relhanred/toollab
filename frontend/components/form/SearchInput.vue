@@ -9,7 +9,7 @@ import Search from "~/components/Icons/Search.vue";
     />
     <input
         type="text"
-        placeholder="Rechercher un élève, une classe..."
+        placeholder="Rechercher"
         class="w-full placeholder:text-placeholder border focus:ring-1 focus:ring-primary focus:outline-none border-input-stroke bg-white rounded-10 pl-14 py-3"
     />
   </div>
