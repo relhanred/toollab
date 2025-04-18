@@ -395,46 +395,49 @@ definePageMeta({
           <div class="font-montserrat text-base text-placeholder font-medium">Aucun paiement</div>
         </div>
       </div>
-
-      <div class="flex flex-col col-span-1 bg-white py-4 px-10 rounded-3xl border text-default h-[23rem]">
-        <div class="font-bold text-2xl font-montserrat mb-6">Commentaires</div>
-        <div
-            ref="commentsContainer"
-            class="flex flex-col gap-y-6 overflow-y-auto flex-1 mb-4"
-            v-if="comments.length"
-        >
-          <div
-              v-for="comment in comments"
-              :key="comment.id"
-              class="bg-gray-light w-full flex flex-col gap-y-2 px-6 py-2 shadow-sm rounded-lg"
-          >
-            <div class="flex items-center justify-between font-montserrat text-xs">
-              <div class="font-bold">{{ comment.author }}</div>
-              <div class="font-light">{{ comment.date }}</div>
+        <div class="flex flex-col col-span-1 bg-white py-4 px-10 rounded-3xl border text-default h-[23rem]">
+            <div class="font-bold text-2xl font-montserrat mb-6">Commentaires</div>
+            <div class="flex-1 overflow-hidden mb-4">
+                <div
+                    v-if="comments.length"
+                    ref="commentsContainer"
+                    class="flex flex-col gap-y-6 overflow-y-auto h-full pr-1"
+                >
+                    <div
+                        v-for="comment in comments"
+                        :key="comment.id"
+                        class="bg-gray-light w-full flex flex-col gap-y-2 px-6 py-2 shadow-sm rounded-lg"
+                    >
+                        <div class="flex items-center justify-between font-montserrat text-xs">
+                            <div class="font-bold">{{ comment.author }}</div>
+                            <div class="font-light">{{ comment.date }}</div>
+                        </div>
+                        <div class="text-xs font-montserrat">{{ comment.content }}</div>
+                    </div>
+                </div>
+                <div v-else class="flex flex-col items-center justify-center gap-y-4 h-full">
+                    <CommentEmpty width="200" height="200" />
+                    <div class="font-montserrat text-base text-placeholder font-medium">
+                        Aucun commentaire
+                    </div>
+                </div>
             </div>
-            <div class="text-xs font-montserrat">{{ comment.content }}</div>
-          </div>
-        </div>
-        <div class="flex flex-col items-center justify-center gap-y-4 flex-1" v-else>
-          <CommentEmpty width="200" height="200"/>
-          <div class="font-montserrat text-base text-placeholder font-medium">Aucun commentaire</div>
-        </div>
 
-        <form @submit.prevent="handleCommentSubmit" class="flex gap-x-4 items-center justify-center">
-          <textarea
-              v-model="newComment"
-              placeholder="Écrivez votre commentaire..."
-              rows="3"
-              class="flex-1 p-3 text-xs font-montserrat border rounded-lg resize-none focus:outline-none focus:ring-1 focus:ring-default"
-          ></textarea>
-          <button
-              type="submit"
-              class="px-5 py-2 bg-default text-white rounded-lg hover:opacity-90 transition-opacity text-sm font-nunito"
-          >
-            Ajouter
-          </button>
-        </form>
-      </div>
+            <form @submit.prevent="handleCommentSubmit" class="flex gap-x-4 items-center">
+                <textarea
+                    v-model="newComment"
+                    placeholder="Écrivez votre commentaire..."
+                    rows="3"
+                    class="flex-1 p-3 text-xs font-montserrat border rounded-lg resize-none focus:outline-none focus:ring-1 focus:ring-default"
+                ></textarea>
+                <button
+                    type="submit"
+                    class="px-5 py-2 bg-default text-white rounded-lg hover:opacity-90 transition-opacity text-sm font-nunito"
+                >
+                    Ajouter
+                </button>
+            </form>
+        </div>
     </div>
   </div>
 </template>
