@@ -18,7 +18,6 @@ definePageMeta({
 
 usePageTitle('Paramètres')
 
-const {user} = useAuth()
 const {setFlashMessage} = useFlashMessage()
 const isDirector = ref(false)
 const isAdmin = ref(false)
@@ -28,6 +27,8 @@ const message = ref({type: '', text: ''})
 const school = ref(null)
 const logoFile = ref(null)
 const logoPreview = ref('')
+
+const { user, initAuth } = useAuth()
 
 const userForm = ref({
   first_name: '',
@@ -273,6 +274,7 @@ const handleFileChange = (event) => {
 }
 
 onMounted(async () => {
+    await initAuth()
   populateUserForm()
   await checkUserRoles()
 })
