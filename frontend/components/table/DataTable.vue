@@ -144,15 +144,14 @@ const isLastRow = (index) => {
 
         <button
             @click="handlePageChange(pagination.currentPage + 1)"
-            :disabled="pagination.currentPage === pagination.totalPages"
+            :disabled="pagination.currentPage === pagination.totalPages || pagination.total === 0"
             class="px-3 py-1 rounded-md border"
-            :class="pagination.currentPage === pagination.totalPages ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'"
+            :class="pagination.currentPage === pagination.totalPages || pagination.total === 0 ? 'text-gray-400 cursor-not-allowed' : 'hover:bg-gray-100'"
         >
           <span class="sr-only">Page suivante</span>
           &raquo;
         </button>
       </div>
-
       <div class="text-sm text-black w-36 text-right">
         <span class="font-bold">{{ pagination.total }}</span> élément{{ pagination.total > 1 ? 's' : '' }}
       </div>
