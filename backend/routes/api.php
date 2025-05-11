@@ -33,6 +33,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::prefix('users')->group(function () {
         Route::put('/{user}/info', [UserController::class, 'updateUserInfo']);
     });
+
+    Route::apiResource('cursus', CursusController::class);
+
 });
 Route::post('forgot-password', [PasswordResetController::class, 'forgotPassword']);
 Route::post('reset-password', [PasswordResetController::class, 'resetPassword']);
