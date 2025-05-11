@@ -61,9 +61,7 @@ const fetchCursus = async () => {
         progression: cursusData.progression
       };
 
-      console.log("Cursus chargé avec niveaux:", cursus.value.levels);
 
-      // Fetch classrooms for this cursus
       await fetchClasses();
     } else {
       error.value = 'Erreur lors de la récupération du cursus';
@@ -86,7 +84,6 @@ const fetchClasses = async (page = pagination.value.currentPage) => {
 
     if (response.status === 'success') {
       classes.value = response.data.items.map(classroom => {
-        // Find corresponding level
         const levelName = classroom.level?.name || 'Sans niveau';
 
         return {
@@ -121,7 +118,6 @@ const handlePageChange = (page) => {
 
 const handleAddClass = async (newClass) => {
   try {
-    // Préparation des données avec les noms de champs corrects pour l'API
     const classData = {
       name: newClass.name,
       cursus_id: cursus.value.id,
@@ -132,19 +128,16 @@ const handleAddClass = async (newClass) => {
       school_id: localStorage.getItem('current_school_id') || 1
     };
 
-    console.log("Données envoyées pour création de classe:", classData);
 
     const response = await classeService.createClass(classData);
 
     if (response.status === 'success') {
-      // Success notification
       const { setFlashMessage } = useFlashMessage();
       setFlashMessage({
         type: 'success',
         message: response.message || `La classe ${newClass.name} a été ajoutée avec succès`
       });
 
-      // Refresh classroom list
       await fetchClasses();
     } else {
       error.value = response.message || 'Une erreur est survenue lors de la création de la classe';

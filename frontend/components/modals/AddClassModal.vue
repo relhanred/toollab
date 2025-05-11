@@ -23,10 +23,6 @@ const props = defineProps({
   }
 })
 
-onMounted(() => {
-  console.log("Modal montée avec niveaux:", props.levels);
-});
-
 const emit = defineEmits(['close', 'save'])
 const error = ref('')
 const isSubmitting = ref(false)
@@ -38,9 +34,7 @@ const newClass = ref({
   levelId: null
 })
 
-// Format levels for InputSelect component
 const levelOptions = computed(() => {
-  console.log("Calcul des options de niveau avec:", props.levels);
 
   if (!props.levels || !props.levels.length) {
     return [{ value: null, label: 'Aucun niveau disponible' }]
@@ -68,11 +62,9 @@ const handleSave = () => {
       levelId: parseInt(newClass.value.levelId) || null
     }
 
-    console.log("Données de la nouvelle classe à créer:", classData);
 
     emit('save', classData)
 
-    // Reset form
     newClass.value = {
       name: '',
       gender: '',
@@ -80,7 +72,6 @@ const handleSave = () => {
       levelId: null
     }
 
-    // Close modal
     emit('close')
   } catch (err) {
     console.error('Erreur lors de la création de la classe:', err)
@@ -90,9 +81,7 @@ const handleSave = () => {
   }
 }
 
-// Si only one level is available, select it by default
 watch(() => props.levels, (newLevels) => {
-  console.log("Niveaux mis à jour dans la modal:", newLevels);
   if (newLevels.length === 1 && !newClass.value.levelId) {
     newClass.value.levelId = newLevels[0].id
   }
@@ -137,7 +126,6 @@ watch(() => props.levels, (newLevels) => {
         </div>
 
         <div class="grid grid-cols-2 gap-10 mb-4">
-          <!-- Genre -->
           <div>
             <SelectGenre
                 v-model="newClass.gender"

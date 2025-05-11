@@ -37,7 +37,6 @@ export default {
                 type: classData.type || 'Standard'
             }
 
-            console.log("Payload envoyé à l'API:", payload);
 
             const response = await apiClient.post('/api/classrooms', payload)
             return response.data
