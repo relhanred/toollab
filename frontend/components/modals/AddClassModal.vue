@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import SelectGenre from "~/components/form/SelectGenre.vue"
 import SaveButton from "~/components/form/SaveButton.vue"
 import CancelButton from "~/components/form/CancelButton.vue"
@@ -23,6 +23,10 @@ const props = defineProps({
   }
 })
 
+onMounted(() => {
+  console.log("Modal montée avec niveaux:", props.levels);
+});
+
 const emit = defineEmits(['close', 'save'])
 const error = ref('')
 const isSubmitting = ref(false)
@@ -36,6 +40,8 @@ const newClass = ref({
 
 // Format levels for InputSelect component
 const levelOptions = computed(() => {
+  console.log("Calcul des options de niveau avec:", props.levels);
+
   if (!props.levels || !props.levels.length) {
     return [{ value: null, label: 'Aucun niveau disponible' }]
   }
@@ -62,6 +68,8 @@ const handleSave = () => {
       levelId: parseInt(newClass.value.levelId) || null
     }
 
+    console.log("Données de la nouvelle classe à créer:", classData);
+
     emit('save', classData)
 
     // Reset form
@@ -82,8 +90,9 @@ const handleSave = () => {
   }
 }
 
-// If only one level is available, select it by default
+// Si only one level is available, select it by default
 watch(() => props.levels, (newLevels) => {
+  console.log("Niveaux mis à jour dans la modal:", newLevels);
   if (newLevels.length === 1 && !newClass.value.levelId) {
     newClass.value.levelId = newLevels[0].id
   }

@@ -61,6 +61,8 @@ const fetchCursus = async () => {
         progression: cursusData.progression
       };
 
+      console.log("Cursus chargé avec niveaux:", cursus.value.levels);
+
       // Fetch classrooms for this cursus
       await fetchClasses();
     } else {
@@ -119,14 +121,20 @@ const handlePageChange = (page) => {
 
 const handleAddClass = async (newClass) => {
   try {
-    const response = await classeService.createClass({
+    // Préparation des données avec les noms de champs corrects pour l'API
+    const classData = {
       name: newClass.name,
       cursus_id: cursus.value.id,
       level_id: newClass.levelId,
       gender: newClass.gender,
       size: parseInt(newClass.size),
-      type: cursus.value.name
-    });
+      type: cursus.value.name,
+      school_id: localStorage.getItem('current_school_id') || 1
+    };
+
+    console.log("Données envoyées pour création de classe:", classData);
+
+    const response = await classeService.createClass(classData);
 
     if (response.status === 'success') {
       // Success notification
@@ -143,6 +151,9 @@ const handleAddClass = async (newClass) => {
     }
   } catch (err) {
     console.error('Erreur lors de la création de la classe:', err);
+    if (err.response) {
+      console.error('Détails de la réponse:', err.response.data);
+    }
     error.value = 'Une erreur est survenue lors de la création de la classe';
   }
 };

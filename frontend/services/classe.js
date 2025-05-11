@@ -24,16 +24,28 @@ export default {
     async createClass(classData) {
         try {
             const schoolId = localStorage.getItem('current_school_id') || 1
+
+            // Format correctement les données pour le backend
             const payload = {
-                ...classData,
+                name: classData.name,
+                cursus_id: classData.cursus_id,
+                level_id: classData.level_id || classData.levelId, // Support des deux formats
+                gender: classData.gender,
+                size: parseInt(classData.size),
                 school_id: classData.school_id || schoolId,
-                years: new Date().getFullYear()
+                years: new Date().getFullYear(),
+                type: classData.type || 'Standard'
             }
+
+            console.log("Payload envoyé à l'API:", payload);
 
             const response = await apiClient.post('/api/classrooms', payload)
             return response.data
         } catch (error) {
             console.error('Erreur lors de la création de la classe:', error)
+            if (error.response && error.response.data) {
+                console.error('Détails de l\'erreur:', error.response.data);
+            }
             throw error
         }
     },

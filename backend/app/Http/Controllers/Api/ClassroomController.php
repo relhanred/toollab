@@ -54,8 +54,14 @@ class ClassroomController extends Controller
     {
         $data = $request->validated();
 
+        // Débogage - À supprimer après résolution
+        \Log::info('Données validées pour création de classe:', $data);
+
         try {
             $classroom = Classroom::create($data);
+
+            // Débogage - À supprimer après résolution
+            \Log::info('Classe créée avec succès, ID: ' . $classroom->id);
 
             return response()->json([
                 'status' => 'success',
@@ -65,10 +71,15 @@ class ClassroomController extends Controller
                 ]
             ], 201);
         } catch (\Exception $e) {
+            // Débogage - À supprimer après résolution
+            \Log::error('Erreur lors de la création de la classe: ' . $e->getMessage());
+            \Log::error('Trace: ' . $e->getTraceAsString());
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Une erreur est survenue lors de la création de la classe',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => ENV('APP_DEBUG') ? $e->getTraceAsString() : null
             ], 500);
         }
     }
