@@ -7,22 +7,21 @@ import AddClassModal from "~/components/modals/AddClassModal.vue";
 import PageContainer from "~/components/layout/PageContainer.vue";
 import cursusService from "~/services/cursus";
 import classeService from "~/services/classe";
-import { useRoute, useRouter } from '#imports';
+import { useRoute } from '#imports';
 
 const route = useRoute();
-const router = useRouter();
 const isLoading = ref(true);
 const error = ref(null);
 const showAddClassModal = ref(false);
 
 const cursus = ref({
-  id: Number(route.params.id),
+  id: parseInt(route.params.id),
   name: '',
   levels: [],
   progression: 'levels'
 });
 
-const allClasses = ref([]);
+const classes = ref([]);
 
 const genderColors = {
   'Hommes': '#93C5FD',
@@ -62,7 +61,7 @@ const fetchCursus = async () => {
         progression: cursusData.progression
       };
 
-      // Récupérer les classes de ce cursus
+      // Fetch classrooms for this cursus
       await fetchClasses();
     } else {
       error.value = 'Erreur lors de la récupération du cursus';
@@ -75,15 +74,17 @@ const fetchCursus = async () => {
   }
 };
 
-const fetchClasses = async () => {
+const fetchClasses = async (page = pagination.value.currentPage) => {
   try {
     const response = await classeService.getClasses({
-      cursus_id: route.params.id
+      cursus_id: route.params.id,
+      page: page,
+      per_page: pagination.value.perPage
     });
 
     if (response.status === 'success') {
-      allClasses.value = response.data.items.map(classroom => {
-        // Trouver le niveau correspondant
+      classes.value = response.data.items.map(classroom => {
+        // Find corresponding level
         const levelName = classroom.level?.name || 'Sans niveau';
 
         return {
@@ -98,7 +99,12 @@ const fetchClasses = async () => {
         };
       });
 
-      pagination.value.total = allClasses.value.length;
+      pagination.value = {
+        currentPage: response.data.pagination.current_page,
+        totalPages: response.data.pagination.total_pages,
+        perPage: response.data.pagination.per_page,
+        total: response.data.pagination.total
+      };
     } else {
       console.error('Erreur lors de la récupération des classes:', response);
     }
@@ -108,7 +114,7 @@ const fetchClasses = async () => {
 };
 
 const handlePageChange = (page) => {
-  pagination.value.currentPage = page;
+  fetchClasses(page);
 };
 
 const handleAddClass = async (newClass) => {
@@ -123,14 +129,14 @@ const handleAddClass = async (newClass) => {
     });
 
     if (response.status === 'success') {
-      // Notification de succès
+      // Success notification
       const { setFlashMessage } = useFlashMessage();
       setFlashMessage({
         type: 'success',
         message: response.message || `La classe ${newClass.name} a été ajoutée avec succès`
       });
 
-      // Rafraîchir la liste des classes
+      // Refresh classroom list
       await fetchClasses();
     } else {
       error.value = response.message || 'Une erreur est survenue lors de la création de la classe';
@@ -183,7 +189,7 @@ definePageMeta({
     <div v-else>
       <DataTable
           :columns="columns"
-          :items="allClasses"
+          :items="classes"
           :pagination="pagination"
           :loading="isLoading"
           @page-change="handlePageChange"

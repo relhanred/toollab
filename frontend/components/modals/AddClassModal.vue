@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import SelectGenre from "~/components/form/SelectGenre.vue"
 import SaveButton from "~/components/form/SaveButton.vue"
 import CancelButton from "~/components/form/CancelButton.vue"
@@ -34,7 +34,7 @@ const newClass = ref({
   levelId: null
 })
 
-// Formater les niveaux pour le composant InputSelect
+// Format levels for InputSelect component
 const levelOptions = computed(() => {
   if (!props.levels || !props.levels.length) {
     return [{ value: null, label: 'Aucun niveau disponible' }]
@@ -82,7 +82,7 @@ const handleSave = () => {
   }
 }
 
-// Si un seul niveau est disponible, le sélectionner par défaut
+// If only one level is available, select it by default
 watch(() => props.levels, (newLevels) => {
   if (newLevels.length === 1 && !newClass.value.levelId) {
     newClass.value.levelId = newLevels[0].id

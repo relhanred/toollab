@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Classroom extends Model
 {
@@ -22,12 +22,7 @@ class Classroom extends Model
         'gender',
     ];
 
-    public function roles(): morphToMany
-    {
-        return $this->morphToMany(Role::class, 'roleable');
-    }
-
-    public function school(): belongsTo
+    public function school(): BelongsTo
     {
         return $this->belongsTo(School::class);
     }
@@ -46,5 +41,13 @@ class Classroom extends Model
     public function level(): BelongsTo
     {
         return $this->belongsTo(CursusLevel::class, 'level_id');
+    }
+
+    /**
+     * Get all user roles for this classroom.
+     */
+    public function userRoles(): MorphMany
+    {
+        return $this->morphMany(UserRole::class, 'roleable');
     }
 }

@@ -16,7 +16,7 @@ definePageMeta({
 const showAddCursusModal = ref(false)
 const isLoading = ref(true)
 const error = ref(null)
-const cursus = ref([])
+const cursusList = ref([])
 
 const pagination = ref({
   currentPage: 1,
@@ -42,7 +42,7 @@ const fetchCursus = async (page = 1) => {
     })
 
     if (response.status === 'success') {
-      cursus.value = response.data.items
+      cursusList.value = response.data.items
 
       pagination.value = {
         currentPage: response.data.pagination.current_page,
@@ -69,8 +69,10 @@ const handleAddCursus = async (newCursus) => {
   try {
     isLoading.value = true
 
-    // Transformer les niveaux au format attendu par l'API
-    const formattedLevels = newCursus.levels.map(level => ({ name: level }))
+    // Transform levels to the format expected by the API
+    const formattedLevels = newCursus.levels.filter(level => level.trim() !== '').map(level => ({
+      name: level
+    }))
 
     const response = await cursusService.createCursus({
       name: newCursus.name,
@@ -79,14 +81,14 @@ const handleAddCursus = async (newCursus) => {
     })
 
     if (response.status === 'success') {
-      // Notification de succès
+      // Success notification
       const { setFlashMessage } = useFlashMessage()
       setFlashMessage({
         type: 'success',
         message: response.message || 'Cursus créé avec succès'
       })
 
-      // Rafraîchir la liste des cursus
+      // Refresh cursus list
       await fetchCursus(pagination.value.currentPage)
     } else {
       error.value = response.message || 'Une erreur est survenue lors de la création du cursus'
@@ -125,7 +127,7 @@ onMounted(() => {
 
     <DataTable
         :columns="columns"
-        :items="cursus"
+        :items="cursusList"
         :pagination="pagination"
         :loading="isLoading"
         @page-change="handlePageChange"
