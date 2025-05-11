@@ -3,7 +3,8 @@ import { ref, onMounted } from "vue"
 import PlusLight from "~/components/Icons/PlusLight.vue"
 import DataTable from "~/components/table/DataTable.vue"
 import AddCursusModal from "~/components/modals/AddCursusModal.vue"
-import PageContainer from "~/components/layout/PageContainer.vue";
+import PageContainer from "~/components/layout/PageContainer.vue"
+import cursusService from '~/services/cursus'
 
 definePageMeta({
   layout: 'auth',
@@ -13,41 +14,15 @@ definePageMeta({
 })
 
 const showAddCursusModal = ref(false)
-const isLoading = ref(false)
+const isLoading = ref(true)
 const error = ref(null)
-
-const cursus = ref([
-  {
-    id: 1,
-    name: 'Arabe',
-    levels: ['1er', '2eme', '3eme'],
-    progression: 'levels',
-    classCount: 6,
-    type: 'Par niveaux'
-  },
-  {
-    id: 2,
-    name: 'Coran',
-    levels: ['Débutant', 'Intermédiaire', 'Avancé'],
-    progression: 'levels',
-    classCount: 4,
-    type: 'Par niveaux'
-  },
-  {
-    id: 3,
-    name: 'Éducation islamique',
-    levels: ['Niveau unique'],
-    progression: 'continu',
-    classCount: 2,
-    type: 'Continu'
-  }
-])
+const cursus = ref([])
 
 const pagination = ref({
   currentPage: 1,
   totalPages: 1,
   perPage: 10,
-  total: cursus.value.length
+  total: 0
 })
 
 const columns = [
@@ -56,32 +31,76 @@ const columns = [
   { key: 'type', label: 'Type de cursus', width: '3' }
 ]
 
-const handlePageChange = (page) => {
-  pagination.value.currentPage = page
-}
+const fetchCursus = async (page = 1) => {
+  try {
+    isLoading.value = true
+    error.value = null
 
-const handleAddCursus = (newCursus) => {
-  if (newCursus) {
-    const newId = Math.max(...cursus.value.map(c => c.id)) + 1
-    cursus.value.push({
-      id: newId,
-      name: newCursus.name,
-      levels: newCursus.levels,
-      progression: newCursus.progression,
-      classCount: 0,
-      type: newCursus.progression === 'levels' ? 'Par niveaux' : 'Continu'
+    const response = await cursusService.getCursus({
+      page: page,
+      per_page: pagination.value.perPage
     })
 
-    pagination.value.total = cursus.value.length
+    if (response.status === 'success') {
+      cursus.value = response.data.items
+
+      pagination.value = {
+        currentPage: response.data.pagination.current_page,
+        totalPages: response.data.pagination.total_pages,
+        perPage: response.data.pagination.per_page,
+        total: response.data.pagination.total
+      }
+    } else {
+      error.value = 'Erreur lors de la récupération des cursus'
+    }
+  } catch (err) {
+    console.error('Erreur lors de la récupération des cursus:', err)
+    error.value = 'Une erreur est survenue lors du chargement des données'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handlePageChange = (page) => {
+  fetchCursus(page)
+}
+
+const handleAddCursus = async (newCursus) => {
+  try {
+    isLoading.value = true
+
+    // Transformer les niveaux au format attendu par l'API
+    const formattedLevels = newCursus.levels.map(level => ({ name: level }))
+
+    const response = await cursusService.createCursus({
+      name: newCursus.name,
+      progression: newCursus.progression,
+      levels: formattedLevels
+    })
+
+    if (response.status === 'success') {
+      // Notification de succès
+      const { setFlashMessage } = useFlashMessage()
+      setFlashMessage({
+        type: 'success',
+        message: response.message || 'Cursus créé avec succès'
+      })
+
+      // Rafraîchir la liste des cursus
+      await fetchCursus(pagination.value.currentPage)
+    } else {
+      error.value = response.message || 'Une erreur est survenue lors de la création du cursus'
+    }
+  } catch (err) {
+    console.error('Erreur lors de la création du cursus:', err)
+    error.value = 'Une erreur est survenue lors de la création du cursus'
+  } finally {
+    isLoading.value = false
   }
 }
 
 onMounted(() => {
-  isLoading.value = true
-
-  setTimeout(() => {
-    isLoading.value = false
-  }, 500)
+  fetchCursus()
 })
 </script>
 
@@ -113,7 +132,7 @@ onMounted(() => {
     >
       <template #default="{ item, isLastRow }">
         <NuxtLink
-            :to="`/cursus/${item.name.toLowerCase()}`"
+            :to="`/cursus/${item.id}`"
             class="grid py-1.5 px-4 hover:bg-gray-50 transition-colors cursor-pointer"
             :class="{ 'border-b border-[#E6EFF5]': !isLastRow }"
             :style="`grid-template-columns: repeat(11, minmax(0, 1fr))`"

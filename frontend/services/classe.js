@@ -1,0 +1,60 @@
+import apiClient from './api'
+
+export default {
+    async getClasses(params = {}) {
+        try {
+            const response = await apiClient.get('/api/classrooms', { params })
+            return response.data
+        } catch (error) {
+            console.error('Erreur lors de la récupération des classes:', error)
+            throw error
+        }
+    },
+
+    async getClassById(id) {
+        try {
+            const response = await apiClient.get(`/api/classrooms/${id}`)
+            return response.data
+        } catch (error) {
+            console.error(`Erreur lors de la récupération de la classe ${id}:`, error)
+            throw error
+        }
+    },
+
+    async createClass(classData) {
+        try {
+            const schoolId = localStorage.getItem('current_school_id') || 1
+            const payload = {
+                ...classData,
+                school_id: classData.school_id || schoolId,
+                years: new Date().getFullYear()
+            }
+
+            const response = await apiClient.post('/api/classrooms', payload)
+            return response.data
+        } catch (error) {
+            console.error('Erreur lors de la création de la classe:', error)
+            throw error
+        }
+    },
+
+    async updateClass(id, classData) {
+        try {
+            const response = await apiClient.put(`/api/classrooms/${id}`, classData)
+            return response.data
+        } catch (error) {
+            console.error(`Erreur lors de la mise à jour de la classe ${id}:`, error)
+            throw error
+        }
+    },
+
+    async deleteClass(id) {
+        try {
+            const response = await apiClient.delete(`/api/classrooms/${id}`)
+            return response.data
+        } catch (error) {
+            console.error(`Erreur lors de la suppression de la classe ${id}:`, error)
+            throw error
+        }
+    }
+}
