@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ClassroomController;
 use App\Http\Controllers\Api\CursusController;
 use App\Http\Controllers\Api\FamilyController;
 use App\Http\Controllers\Api\InvitationController;
@@ -8,7 +9,6 @@ use App\Http\Controllers\Api\SchoolController;
 use App\Http\Controllers\Api\StaffController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserPasswordController;
-use App\Http\Controllers\ClassroomController;
 use App\Http\Controllers\PasswordResetController;
 use Illuminate\Support\Facades\Route;
 
