@@ -17,10 +17,6 @@ const props = defineProps({
     type: String,
     default: ''
   },
-  levelId: {
-    type: Number,
-    default: 1
-  },
   levels: {
     type: Array,
     default: () => []
@@ -35,11 +31,15 @@ const newClass = ref({
   name: '',
   gender: '',
   size: '',
-  levelId: 1
+  levelId: null
 })
 
 // Formater les niveaux pour le composant InputSelect
 const levelOptions = computed(() => {
+  if (!props.levels || !props.levels.length) {
+    return [{ value: null, label: 'Aucun niveau disponible' }]
+  }
+
   return props.levels.map(level => ({
     value: level.id,
     label: level.name
@@ -58,7 +58,8 @@ const handleSave = () => {
 
     const classData = {
       ...newClass.value,
-      size: parseInt(newClass.value.size)
+      size: parseInt(newClass.value.size),
+      levelId: parseInt(newClass.value.levelId) || null
     }
 
     emit('save', classData)
@@ -68,7 +69,7 @@ const handleSave = () => {
       name: '',
       gender: '',
       size: '',
-      levelId: 1
+      levelId: null
     }
 
     // Close modal
@@ -80,6 +81,13 @@ const handleSave = () => {
     isSubmitting.value = false
   }
 }
+
+// Si un seul niveau est disponible, le sélectionner par défaut
+watch(() => props.levels, (newLevels) => {
+  if (newLevels.length === 1 && !newClass.value.levelId) {
+    newClass.value.levelId = newLevels[0].id
+  }
+}, { immediate: true })
 </script>
 
 <template>
