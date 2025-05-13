@@ -14,6 +14,7 @@ export default {
     async getCursusById(id) {
         try {
             const response = await apiClient.get(`/api/cursus/${id}`)
+            console.log(response.data);
             return response.data
         } catch (error) {
             console.error(`Erreur lors de la récupération du cursus ${id}:`, error)

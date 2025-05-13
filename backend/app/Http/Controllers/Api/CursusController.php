@@ -10,6 +10,7 @@ use App\Models\CursusLevel;
 use App\Traits\PaginationTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CursusController extends Controller
 {
@@ -103,6 +104,8 @@ class CursusController extends Controller
      */
     public function show(Cursus $cursus)
     {
+
+        Log::info('Cursus ID reçu: ' . $cursus);
         $cursus->load('levels');
 
         return response()->json([

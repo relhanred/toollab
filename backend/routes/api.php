@@ -36,11 +36,24 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::put('/{user}/info', [UserController::class, 'updateUserInfo']);
     });
 
-    Route::apiResource('cursus', CursusController::class);
-    Route::apiResource('classrooms', ClassroomController::class);
+    Route::prefix('cursus')->group(function () {
+        Route::get('/', [CursusController::class, 'index']);
+        Route::post('/', [CursusController::class, 'store']);
+        Route::get('/{cursus}', [CursusController::class, 'show']);
+        Route::put('/{cursus}', [CursusController::class, 'update']);
+        Route::delete('/{cursus}', [CursusController::class, 'destroy']);
+    });
 
-
+    // Remplacer les apiResource par des routes explicites pour Classrooms
+    Route::prefix('classrooms')->group(function () {
+        Route::get('/', [ClassroomController::class, 'index']);
+        Route::post('/', [ClassroomController::class, 'store']);
+        Route::get('/{classroom}', [ClassroomController::class, 'show']);
+        Route::put('/{classroom}', [ClassroomController::class, 'update']);
+        Route::delete('/{id}', [ClassroomController::class, 'destroy']);
+    });
 });
+
 Route::post('forgot-password', [PasswordResetController::class, 'forgotPassword']);
 Route::post('reset-password', [PasswordResetController::class, 'resetPassword']);
 Route::post('check-reset-token', [PasswordResetController::class, 'checkResetToken']);
